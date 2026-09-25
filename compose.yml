@@ -10,7 +10,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dance_dairy -d dance_dairy"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-dance_dairy} -d $${POSTGRES_DB:-dance_dairy}"]
       interval: 5s
       timeout: 5s
       retries: 10

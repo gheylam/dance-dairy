@@ -38,7 +38,9 @@ INSERT INTO classes (studio_slug,source_id,event_group_id,status,studio_raw,teac
 ON CONFLICT (studio_slug, source_id, start_at) DO UPDATE SET
   teacher=EXCLUDED.teacher, song=EXCLUDED.song, artist=EXCLUDED.artist, updated_at=now(), scraped_at=now();
 
--- LUM3X course: one group id, two occurrence rows, price_tier course
+-- LUM3X course: one group id, two occurrence rows, price_tier course.
+-- Difficulty rule: range tag [Beg/Int] takes the lower bound (Beginners).
+-- Kirby parser must replicate this mapping.
 INSERT INTO classes (studio_slug,source_id,event_group_id,status,studio_raw,teacher,teacher_confidence,
   song,artist,difficulty,song_section,start_at,end_at,venue,address,area,
   price_pence,price_currency,price_raw,price_tier,booking_url,source_url,title_raw,tags,scrape_run_id) VALUES

@@ -86,3 +86,5 @@ DROP TRIGGER IF EXISTS trg_classes_updated_at ON classes;
 CREATE TRIGGER trg_classes_updated_at
   BEFORE UPDATE ON classes
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE INDEX IF NOT EXISTS idx_classes_scrape_run ON classes (scrape_run_id);

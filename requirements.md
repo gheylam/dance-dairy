@@ -73,7 +73,7 @@ Decide before building. Criteria: 2-person ops cost, Netlify fit, server search 
 Default recommendation: B unless server-side search or history proves necessary in Phase 1 spikes. Record decision + reason in this doc before Phase 1.
 
 ## 6. Success Criteria (cut for 2)
-- 2 studios automated (not 5).
+- 2 studios automated.
 - Calendar shows correct times.
 - Search + filters return accurate results.
 - Refresh pipeline runs without manual steps.
