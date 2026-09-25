@@ -1,17 +1,16 @@
--- Seed fixtures shaped by live BookWhen probe (DGC + LUM3X verified, KMDC same shell).
+-- Seed fixtures shaped by live BookWhen probe (DGC + LUM3X verified).
+-- KMDC descoped from MVP.
 -- Idempotent for classes/studios; scrape_runs appends one audit row per studio per run.
 
 INSERT INTO studios (slug, canonical_name, listing_url, booking_system, scrape_permission, timezone) VALUES
   ('dgcdance','DGC Dance','https://bookwhen.com/dgcdance?tag=Class','bookwhen',true,'Europe/London'),
-  ('lum3x','LUM3X','https://bookwhen.com/lum3x','bookwhen',true,'Europe/London'),
-  ('kpopinlondonmin','KMDC','https://bookwhen.com/kpopinlondonmin','bookwhen',true,'Europe/London')
+  ('lum3x','LUM3X','https://bookwhen.com/lum3x','bookwhen',true,'Europe/London')
 ON CONFLICT (slug) DO UPDATE SET
   canonical_name=EXCLUDED.canonical_name, listing_url=EXCLUDED.listing_url;
 
 INSERT INTO scrape_runs (studio_slug, started_at, finished_at, status, rows_fetched) VALUES
   ('dgcdance',now(),now(),'ok',1),
-  ('lum3x',now(),now(),'ok',3),
-  ('kpopinlondonmin',now(),now(),'ok',1);
+  ('lum3x',now(),now(),'ok',3);
 
 -- DGC: teacher via tag-join, section Highlight, £18 single
 INSERT INTO classes (studio_slug,source_id,event_group_id,status,studio_raw,teacher,teacher_confidence,
@@ -57,18 +56,3 @@ INSERT INTO classes (studio_slug,source_id,event_group_id,status,studio_raw,teac
    (SELECT max(id) FROM scrape_runs WHERE studio_slug='lum3x'))
 ON CONFLICT (studio_slug, source_id, start_at) DO UPDATE SET
   updated_at=now(), scraped_at=now();
-
--- KMDC: SAMPLE row, not probed data — same BookWhen shell assumed, venue
--- copied as placeholder and teacher unknown until tag-join spike lands.
--- Replace with live fetch before relying on it.
-INSERT INTO classes (studio_slug,source_id,event_group_id,status,studio_raw,teacher,teacher_confidence,
-  song,artist,difficulty,song_section,start_at,end_at,venue,address,area,
-  price_pence,price_currency,price_raw,price_tier,booking_url,source_url,title_raw,tags,scrape_run_id) VALUES
-  ('kpopinlondonmin','ev-kmdc-sample01',NULL,'scheduled','KMDC',NULL,'unknown',
-   'MONEY','LISA','All Levels',NULL,'2026-10-07 18:00:00+01','2026-10-07 19:30:00+01',
-   'The Marshall Building','44 Lincoln''s Inn Fields, London WC2A 3ED','Holborn',
-   1500,'GBP','£15.00','single','https://bookwhen.com/kpopinlondonmin/e/ev-kmdc-sample01',
-   'https://bookwhen.com/kpopinlondonmin/e/ev-kmdc-sample01','【All Levels】MONEY - LISA (1.5h)','{All Levels}',
-   (SELECT max(id) FROM scrape_runs WHERE studio_slug='kpopinlondonmin'))
-ON CONFLICT (studio_slug, source_id, start_at) DO UPDATE SET
-  teacher=EXCLUDED.teacher, song=EXCLUDED.song, artist=EXCLUDED.artist, updated_at=now(), scraped_at=now();

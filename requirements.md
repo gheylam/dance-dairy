@@ -12,7 +12,7 @@ Users: dancers on phones, checking on go. Studios as data sources, not users in 
 ## 2. Functional Requirements
 
 ### 2.1 Ingestion
-- MUST automate all 3 sources: Lum3x (easy), DGC (medium), KMDC / Kpopinlondonmin (hard).
+- MUST automate 2 sources for MVP: Lum3x (easy), DGC (medium). KMDC / Kpopinlondonmin (hard) deferred post-MVP.
 - MUST record per-source: listing URL, booking system, scrape permission flag.
 - MUST NOT require manual entry for MVP operation.
 - Instagram-only studios deferred, documented as known gap.
@@ -73,7 +73,7 @@ Decide before building. Criteria: 2-person ops cost, Netlify fit, server search 
 Default recommendation: B unless server-side search or history proves necessary in Phase 1 spikes. Record decision + reason in this doc before Phase 1.
 
 ## 6. Success Criteria (cut for 2)
-- 3 studios automated (not 5).
+- 2 studios automated (not 5).
 - Calendar shows correct times.
 - Search + filters return accurate results.
 - Refresh pipeline runs without manual steps.
@@ -82,6 +82,7 @@ Default recommendation: B unless server-side search or history proves necessary 
 
 ## 7. Out of Scope
 - Studio 808, ARC, Instagram-only automation.
+- KMDC / Kpopinlondonmin automation (deferred post-MVP).
 - User accounts, favourites, saved filters.
 - Email/push alerts.
 - Analytics dashboards.
