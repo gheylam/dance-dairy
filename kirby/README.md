@@ -3,7 +3,7 @@ Canonical parsers + pipeline.
 
 ## Local DB (Docker, dev parity only)
 
-cp .env.example .env
+cp -n .env.example .env
 docker compose up -d db
 psql "$DATABASE_URL" -f db/migrations/001_base.sql
 psql "$DATABASE_URL" -f db/migrations/002_indexes.sql

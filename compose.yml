@@ -2,9 +2,9 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_DB: dance_dairy
-      POSTGRES_USER: dance_dairy
-      POSTGRES_PASSWORD: dance_dairy
+      POSTGRES_DB: ${POSTGRES_DB:-dance_dairy}
+      POSTGRES_USER: ${POSTGRES_USER:-dance_dairy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dance_dairy}
     ports:
       - "5432:5432"
     volumes:

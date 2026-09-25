@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- One row per studio booking system (BookWhen slugs from live probe)
-CREATE TABLE studios (
+CREATE TABLE IF NOT EXISTS studios (
   slug TEXT PRIMARY KEY,
   canonical_name TEXT NOT NULL,
   listing_url TEXT NOT NULL,
@@ -11,21 +11,25 @@ CREATE TABLE studios (
 );
 
 -- Raw fetch audit + last-good fallback + staleness (requirements §2.3)
-CREATE TABLE scrape_runs (
+CREATE TABLE IF NOT EXISTS scrape_runs (
   id BIGSERIAL PRIMARY KEY,
   studio_slug TEXT NOT NULL REFERENCES studios(slug),
   started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   finished_at TIMESTAMPTZ,
-  status TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('ok','partial','failed')),
   rows_fetched INT NOT NULL DEFAULT 0,
   error TEXT,
   snapshot_url TEXT
 );
-CREATE INDEX ON scrape_runs (studio_slug, started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_scrape_runs_studio_started ON scrape_runs (studio_slug, started_at DESC);
 
 -- Canonical occurrence: one row per class date.
 -- Course (LUM3X multi-date) expands to N rows sharing event_group_id.
-CREATE TABLE classes (
+-- Dedupe: UNIQUE below covers BookWhen (source_id always present).
+-- requirements §2.2 fallback (studio+start+teacher+song) lives in kirby
+-- upsert logic, not the DB: a unique index would false-conflict on
+-- same-slot rows that differ by venue/section.
+CREATE TABLE IF NOT EXISTS classes (
   id BIGSERIAL PRIMARY KEY,
   studio_slug TEXT NOT NULL REFERENCES studios(slug),
   source_id TEXT NOT NULL,
@@ -69,3 +73,16 @@ CREATE TABLE classes (
 
   UNIQUE (studio_slug, source_id, start_at)
 );
+
+-- updated_at auto-bump: plain UPDATEs must not leave stale timestamps.
+CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_classes_updated_at ON classes;
+CREATE TRIGGER trg_classes_updated_at
+  BEFORE UPDATE ON classes
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();

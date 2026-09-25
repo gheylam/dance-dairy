@@ -58,7 +58,9 @@ INSERT INTO classes (studio_slug,source_id,event_group_id,status,studio_raw,teac
 ON CONFLICT (studio_slug, source_id, start_at) DO UPDATE SET
   updated_at=now(), scraped_at=now();
 
--- KMDC: same shell, teacher unknown until tag-join spike lands
+-- KMDC: SAMPLE row, not probed data — same BookWhen shell assumed, venue
+-- copied as placeholder and teacher unknown until tag-join spike lands.
+-- Replace with live fetch before relying on it.
 INSERT INTO classes (studio_slug,source_id,event_group_id,status,studio_raw,teacher,teacher_confidence,
   song,artist,difficulty,song_section,start_at,end_at,venue,address,area,
   price_pence,price_currency,price_raw,price_tier,booking_url,source_url,title_raw,tags,scrape_run_id) VALUES
