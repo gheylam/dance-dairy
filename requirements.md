@@ -47,7 +47,7 @@ Dedupe key: `source + source_id` fallback `studio + start_datetime + teacher + s
 - MUST provide class detail view (modal or page) without losing calendar place.
 - MUST provide mobile-first layout. Class card scannable in 1–2s: song/artist, teacher, studio, location, time + duration, level tag, booking link.
 - MUST handle empty states: "No classes found", "No classes today" + alternative action.
-- Landing MUST explain what Klassified is. MUST replace current TanStack boilerplate if reusing repo.
+- Landing MUST explain what the app is. MUST replace current TanStack boilerplate if reusing repo.
 
 ## 3. UX Constraints
 - Minimal clicks to class detail.
