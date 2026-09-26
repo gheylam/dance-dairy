@@ -34,7 +34,19 @@ dialog { border: 1px solid #ccc; border-radius: 12px; max-width: 480px; width: 9
 .card.tint-haven { background: #E8EFFD; } .card.tint-kpoplondonmin { background: #FDE6EF; }
 .card.tint-ventures { background: #E8E8EA; }
 .week button { min-height: 44px; }
-body[data-view="month"] #results { display: none; }
+body[data-view="list"] #weekWrap { display: none; }
 body[data-view="list"] .month-wrap { display: none; }
+body[data-view="week"] #results { display: none; }
+body[data-view="week"] .month-wrap { display: none; }
+body[data-view="month"] #results { display: none; }
+body[data-view="month"] #weekWrap { display: none; }
+.weeknav { display: flex; gap: 8px; align-items: center; margin: 8px 0; font-size: 13px; }
+.weeknav button { min-height: 44px; padding: 8px 12px; border-radius: 8px; border: 1px solid #ccd; background: #fff; }
+.weekgrid { display: grid; grid-template-columns: repeat(7, minmax(72px, 1fr)); gap: 4px; overflow-x: auto; }
+.wday { display: flex; flex-direction: column; gap: 4px; min-width: 72px; }
+.wday-head { min-height: 44px; border-radius: 8px; border: 1px solid #ccd; background: #fff; }
+.wday-head[aria-current] { background: #4a7fd4; color: #fff; border-color: #4a7fd4; }
+.chip { min-height: 44px; border-radius: 8px; border: 1px solid #e3e3ea; border-left-width: 6px; background: #fff; font-size: 12px; padding: 6px; text-align: left; }
+.wempty { font-size: 12px; color: #aaa; padding: 6px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none; } }
 :focus-visible { outline: 2px solid #2F7ED1; }

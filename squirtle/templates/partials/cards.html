@@ -22,6 +22,6 @@
 {% endfor %}
 </div>
 {% else %}
-{% if day %}<p>No classes today. <a id="todayLink" href="/?query={{ query|urlencode }}{% for s in studios %}&studio={{ s }}{% endfor %}{% for d in difficulties %}&difficulty={{ d }}{% endfor %}{% for p in prices %}&price={{ p }}{% endfor %}{% for a in areas %}&area={{ a }}{% endfor %}">Today</a> <button type="button" id="clearFilters">Clear filters</button></p>
+{% if day %}<p>No classes today. <a id="todayLink" href="/?query={{ query|urlencode }}{% for s in studios %}&studio={{ s }}{% endfor %}{% for d in difficulties %}&difficulty={{ d }}{% endfor %}{% for p in prices %}&price={{ p }}{% endfor %}{% for a in areas %}&area={{ a }}{% endfor %}{% for s in songs %}&song={{ s|urlencode }}{% endfor %}{% for a in artists %}&artist={{ a|urlencode }}{% endfor %}{% for t in teachers %}&teacher={{ t|urlencode }}{% endfor %}">Today</a> <button type="button" id="clearFilters">Clear filters</button></p>
 {% else %}<p>No classes found. <button type="button" id="clearFilters">Clear filters</button></p>{% endif %}
 {% endif %}
