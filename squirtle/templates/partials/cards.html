@@ -13,5 +13,6 @@
 </article>
 {% endfor %}
 {% else %}
-<p>No classes found. <button type="button" id="clearFilters">Clear filters</button></p>
+{% if day %}<p>No classes today. <a href="/">Today</a> <button type="button" id="clearFilters">Clear filters</button></p>
+{% else %}<p>No classes found. <button type="button" id="clearFilters">Clear filters</button></p>{% endif %}
 {% endif %}

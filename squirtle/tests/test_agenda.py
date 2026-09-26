@@ -23,3 +23,10 @@ def test_cards_partial_empty_state():
     r = client.get("/partials/cards", params={"query": "zzz-no-match"})
     assert "No classes found" in r.text
     assert "Clear filters" in r.text
+
+
+def test_day_filter_and_empty_day():
+    r = client.get("/partials/cards", params={"day": "2026-01-16"})
+    assert "Tate McRae" in r.text
+    r2 = client.get("/partials/cards", params={"day": "2026-01-19"})
+    assert "No classes today" in r2.text

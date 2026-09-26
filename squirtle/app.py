@@ -20,7 +20,7 @@ def enrich(rows):
     return out
 
 
-def apply_filters(rows, query="", studio=""):
+def apply_filters(rows, query="", studio="", day=""):
     q = (query or "").lower()
     out = rows
     if q:
@@ -28,6 +28,8 @@ def apply_filters(rows, query="", studio=""):
             str(x or "") for x in (r["song"], r["artist"], r["teacher"], r["studio_raw"], r["venue"], r["area"])).lower()]
     if studio:
         out = [r for r in out if r["studio_slug"] == studio]
+    if day:
+        out = [r for r in out if r["start_at"][:10] == day]
     return out
 
 
@@ -62,9 +64,9 @@ def create_app():
                                                              "month": build_month(2026, 1)})
 
     @app.get("/partials/cards", response_class=HTMLResponse)
-    def cards(request: Request, query: str = "", studio: str = ""):
-        rows = enrich(apply_filters(get_classes(), query, studio))
-        return tpl.TemplateResponse(request, "partials/cards.html", {"request": request, "classes": rows})
+    def cards(request: Request, query: str = "", studio: str = "", day: str = ""):
+        rows = enrich(apply_filters(get_classes(), query, studio, day))
+        return tpl.TemplateResponse(request, "partials/cards.html", {"request": request, "classes": rows, "day": day})
 
     @app.get("/partials/detail/{cid}", response_class=HTMLResponse)
     def detail(request: Request, cid: str):

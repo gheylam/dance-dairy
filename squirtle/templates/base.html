@@ -15,6 +15,16 @@
 </header>
 <p class="landing">London K-pop classes, one calendar. Find a class by song or artist in seconds.</p>
 <p class="stale">Last updated 2h ago</p>
+<nav class="week" aria-label="Week of January 12 to 18, 2026">
+  <button type="button" data-day="">All</button>
+  <button type="button" data-day="2026-01-12">Mon 12</button>
+  <button type="button" data-day="2026-01-13">Tue 13</button>
+  <button type="button" data-day="2026-01-14">Wed 14</button>
+  <button type="button" data-day="2026-01-15">Thu 15</button>
+  <button type="button" data-day="2026-01-16" aria-current="true">Fri 16</button>
+  <button type="button" data-day="2026-01-17">Sat 17</button>
+  <button type="button" data-day="2026-01-18">Sun 18</button>
+</nav>
 <main id="results">{% include "partials/cards.html" %}</main>
 <section aria-label="Month view">{% include "partials/month.html" %}</section>
 <section aria-label="Filters">{% include "partials/filters.html" %}</section>
