@@ -1,0 +1,10 @@
+<table class="month" aria-label="January 2026 calendar">
+{% for week in month %}
+<tr>{% for d in week %}
+<td class="{% if not d.in_month %}out{% endif %}" data-date="{{ d.date }}">
+  <button type="button" data-day="{{ d.date }}">{{ d.day }}</button>
+  <span class="dots">{% for s in d.dots[:3] %}<i class="dot studio-{{ s }}"></i>{% endfor %}{% if d.dots|length > 3 %}+{{ d.dots|length - 3 }}{% endif %}</span>
+</td>
+{% endfor %}</tr>
+{% endfor %}
+</table>

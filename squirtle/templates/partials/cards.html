@@ -1,0 +1,19 @@
+{% if classes %}
+{% for c in classes %}
+<article class="card studio-{{ c.studio_slug }}" data-id="{{ c.id }}">
+  <div class="card-main">
+    <h2>{{ c.song or "Training" }} — {{ c.artist or c.studio_raw }}</h2>
+    <p class="meta">{{ c.teacher or "TBA" }} · {{ c.difficulty }}{% if c.song_section %} · {{ c.song_section }}{% endif %}</p>
+    <p class="meta"><time datetime="{{ c.start_at }}">{{ c.start_label }}</time> · {{ c.venue }}, {{ c.area }}</p>
+  </div>
+  <div class="card-side">
+    <span class="mark" aria-hidden="true">{{ c.studio_raw[:2] }}</span>
+    <a href="{{ c.booking_url }}" target="_blank" rel="noopener">Book</a>
+    <button type="button" data-open="{{ c.id }}">Details</button>
+  </div>
+</article>
+{% endfor %}
+{% else %}
+{% if day %}<p>No classes today. <a href="/">Today</a> <button type="button" id="clearFilters">Clear filters</button></p>
+{% else %}<p>No classes found. <button type="button" id="clearFilters">Clear filters</button></p>{% endif %}
+{% endif %}

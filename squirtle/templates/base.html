@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klassified — London K-pop classes</title>
+<meta name="description" content="One searchable calendar for London K-pop dance classes.">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/">K</a>
+  <input id="q" name="query" type="search" placeholder="Search song, artist, teacher, studio" aria-label="Search classes" autocomplete="off">
+  <button id="filtersBtn" type="button">Filters <span id="fcount">{% if fcount %}({{ fcount }}){% endif %}</span></button>
+</header>
+<p class="landing">London K-pop classes, one calendar. Find a class by song or artist in seconds.</p>
+<p class="stale">Last updated 2h ago</p>
+<nav class="week" aria-label="Week of January 12 to 18, 2026">
+  <button type="button" data-day="">All</button>
+  <button type="button" data-day="2026-01-12">Mon 12</button>
+  <button type="button" data-day="2026-01-13">Tue 13</button>
+  <button type="button" data-day="2026-01-14">Wed 14</button>
+  <button type="button" data-day="2026-01-15">Thu 15</button>
+  <button type="button" data-day="2026-01-16" aria-current="true">Fri 16</button>
+  <button type="button" data-day="2026-01-17">Sat 17</button>
+  <button type="button" data-day="2026-01-18">Sun 18</button>
+</nav>
+<main id="results">{% include "partials/cards.html" %}</main>
+<section aria-label="Month view">{% include "partials/month.html" %}</section>
+<section aria-label="Filters" id="filtersSection">{% include "partials/filters.html" %}</section>
+<dialog id="detail"><div id="detailBody"></div><form method="dialog"><button>Close</button></form></dialog>
+<script src="/static/app.js"></script>
+</body>
+</html>
