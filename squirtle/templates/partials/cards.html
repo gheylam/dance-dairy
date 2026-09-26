@@ -9,6 +9,7 @@
   <div class="card-side">
     <span class="mark" aria-hidden="true">{{ c.studio_raw[:2] }}</span>
     <a href="{{ c.booking_url }}" target="_blank" rel="noopener">Book</a>
+    <button type="button" data-open="{{ c.id }}">Details</button>
   </div>
 </article>
 {% endfor %}

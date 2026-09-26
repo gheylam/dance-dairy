@@ -1,34 +1,59 @@
 const q = document.getElementById("q");
 const results = document.getElementById("results");
+const dialog = document.getElementById("detail");
+const detailBody = document.getElementById("detailBody");
 let t;
+let lastOpener = null;
+
+async function loadCards(url) {
+  const r = await fetch(url);
+  results.innerHTML = await r.text();
+}
+
+async function openDetail(id, opener) {
+  const r = await fetch("/partials/detail/" + id);
+  if (!r.ok) return;
+  lastOpener = opener || null;
+  detailBody.innerHTML = await r.text();
+  dialog.showModal();
+}
+
+dialog?.addEventListener("close", () => {
+  if (lastOpener && document.contains(lastOpener)) lastOpener.focus();
+  lastOpener = null;
+});
+
 q?.addEventListener("input", () => {
   clearTimeout(t);
-  t = setTimeout(async () => {
-    const r = await fetch("/partials/cards?query=" + encodeURIComponent(q.value));
-    results.innerHTML = await r.text();
-  }, 300);
+  t = setTimeout(() => loadCards("/partials/cards?query=" + encodeURIComponent(q.value)), 300);
 });
+
 results?.addEventListener("click", async (e) => {
   if (e.target.closest("#clearFilters")) {
     q.value = "";
     document.querySelectorAll(".week button").forEach((b) => b.removeAttribute("aria-current"));
-    const r = await fetch("/partials/cards");
-    results.innerHTML = await r.text();
+    await loadCards("/partials/cards");
     return;
   }
+  const opener = e.target.closest("[data-open]");
   const card = e.target.closest(".card");
+  if (opener && card) {
+    await openDetail(opener.dataset.open, opener);
+    return;
+  }
   if (!card || e.target.closest("a")) return;
-  const r = await fetch("/partials/detail/" + card.dataset.id);
-  if (!r.ok) return;
-  document.getElementById("detailBody").innerHTML = await r.text();
-  document.getElementById("detail").showModal();
+  await openDetail(card.dataset.id, card);
 });
-document.querySelector(".week")?.addEventListener("click", async (e) => {
+
+async function dayClick(e) {
   const btn = e.target.closest("button[data-day]");
   if (!btn) return;
   document.querySelectorAll(".week button").forEach((b) => b.removeAttribute("aria-current"));
-  btn.setAttribute("aria-current", "true");
+  const weekBtn = document.querySelector('.week button[data-day="' + btn.dataset.day + '"]');
+  if (weekBtn) weekBtn.setAttribute("aria-current", "true");
   const url = btn.dataset.day ? "/partials/cards?day=" + btn.dataset.day : "/partials/cards";
-  const r = await fetch(url);
-  results.innerHTML = await r.text();
-});
+  await loadCards(url);
+}
+
+document.querySelector(".week")?.addEventListener("click", dayClick);
+document.querySelector(".month")?.addEventListener("click", dayClick);

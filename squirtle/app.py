@@ -1,14 +1,17 @@
 import calendar as _cal
 from datetime import datetime
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from zoneinfo import ZoneInfo
 from api.stubs import get_classes
+
+LONDON = ZoneInfo("Europe/London")
 
 
 def fmt(iso: str) -> str:
-    return datetime.fromisoformat(iso).strftime("%I:%M %p").lstrip("0")
+    return datetime.fromisoformat(iso).astimezone(LONDON).strftime("%I:%M %p").lstrip("0")
 
 
 def enrich(rows):
@@ -20,17 +23,24 @@ def enrich(rows):
     return out
 
 
-def apply_filters(rows, query="", studio="", day=""):
+def apply_filters(rows, query="", studio=None, day=""):
     q = (query or "").lower()
     out = rows
     if q:
         out = [r for r in out if q in " ".join(
             str(x or "") for x in (r["song"], r["artist"], r["teacher"], r["studio_raw"], r["venue"], r["area"])).lower()]
-    if studio:
-        out = [r for r in out if r["studio_slug"] == studio]
+    studios = [studio] if isinstance(studio, str) else (studio or [])
+    studios = [s for s in studios if s]
+    if studios:
+        out = [r for r in out if r["studio_slug"] in studios]
     if day:
         out = [r for r in out if r["start_at"][:10] == day]
     return out
+
+
+def filter_count(query="", studio=None, day=""):
+    studios = [studio] if isinstance(studio, str) else (studio or [])
+    return (1 if query else 0) + len([s for s in studios if s]) + (1 if day else 0)
 
 
 def build_month(year, month):
@@ -59,12 +69,15 @@ def create_app():
         return get_classes()
 
     @app.get("/", response_class=HTMLResponse)
-    def home(request: Request):
-        return tpl.TemplateResponse(request, "agenda.html", {"request": request, "classes": enrich(get_classes()),
-                                                             "month": build_month(2026, 1)})
+    def home(request: Request, query: str = "", studio: list = Query([]), day: str = ""):
+        rows = enrich(apply_filters(get_classes(), query, studio, day))
+        return tpl.TemplateResponse(request, "agenda.html", {"request": request, "classes": rows,
+                                                             "month": build_month(2026, 1),
+                                                             "query": query, "studios": studio, "day": day,
+                                                             "fcount": filter_count(query, studio, day)})
 
     @app.get("/partials/cards", response_class=HTMLResponse)
-    def cards(request: Request, query: str = "", studio: str = "", day: str = ""):
+    def cards(request: Request, query: str = "", studio: list = Query([]), day: str = ""):
         rows = enrich(apply_filters(get_classes(), query, studio, day))
         return tpl.TemplateResponse(request, "partials/cards.html", {"request": request, "classes": rows, "day": day})
 

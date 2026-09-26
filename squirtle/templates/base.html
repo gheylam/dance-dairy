@@ -11,7 +11,7 @@
 <header class="top">
   <a class="logo" href="/">K</a>
   <input id="q" name="query" type="search" placeholder="Search song, artist, teacher, studio" aria-label="Search classes" autocomplete="off">
-  <button id="filtersBtn" type="button">Filters <span id="fcount"></span></button>
+  <button id="filtersBtn" type="button">Filters <span id="fcount">{% if fcount %}({{ fcount }}){% endif %}</span></button>
 </header>
 <p class="landing">London K-pop classes, one calendar. Find a class by song or artist in seconds.</p>
 <p class="stale">Last updated 2h ago</p>

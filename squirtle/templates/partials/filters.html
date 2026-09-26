@@ -1,11 +1,11 @@
-<form id="filters" method="get" action="/partials/cards">
+<form id="filters" method="get" action="/">
   <fieldset><legend>Studio</legend>
-    <label><input type="checkbox" name="studio" value="dgcdance"> DGC Dance</label>
-    <label><input type="checkbox" name="studio" value="lum3x"> LUM3X</label>
-    <label><input type="checkbox" name="studio" value="ventures"> Ventures</label>
-    <label><input type="checkbox" name="studio" value="kpoplondonmin"> kpoplondonmin</label>
-    <label><input type="checkbox" name="studio" value="haven"> Haven</label>
+    <label><input type="checkbox" name="studio" value="dgcdance"{% if "dgcdance" in studios %} checked{% endif %}> DGC Dance</label>
+    <label><input type="checkbox" name="studio" value="lum3x"{% if "lum3x" in studios %} checked{% endif %}> LUM3X</label>
+    <label><input type="checkbox" name="studio" value="ventures"{% if "ventures" in studios %} checked{% endif %}> Ventures</label>
+    <label><input type="checkbox" name="studio" value="kpoplondonmin"{% if "kpoplondonmin" in studios %} checked{% endif %}> kpoplondonmin</label>
+    <label><input type="checkbox" name="studio" value="haven"{% if "haven" in studios %} checked{% endif %}> Haven</label>
   </fieldset>
   <button type="submit">Apply</button>
-  <button type="button" id="clearFilters2">Clear all</button>
+  <a href="/">Clear all</a>
 </form>
