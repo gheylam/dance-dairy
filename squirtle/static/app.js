@@ -19,22 +19,44 @@ async function loadCards(url) {
   }
 }
 
+function currentFilterParams() {
+  const p = new URLSearchParams();
+  document.querySelectorAll('#filters input[type="checkbox"]:checked').forEach((c) => {
+    p.append(c.name, c.value);
+  });
+  document.querySelectorAll(".week button[aria-current]").forEach((b) => {
+    if (b.dataset.day) p.append("day", b.dataset.day);
+  });
+  return p;
+}
+
 async function openDetail(id, opener) {
-  const r = await fetch("/partials/detail/" + id);
+  const r = await fetch("/partials/detail/" + encodeURIComponent(id));
   if (!r.ok) return;
   lastOpener = opener || null;
   detailBody.innerHTML = await r.text();
   dialog.showModal();
+  history.pushState({ cid: id }, "", "#class=" + encodeURIComponent(id));
 }
 
 dialog?.addEventListener("close", () => {
   if (lastOpener && document.contains(lastOpener)) lastOpener.focus();
   lastOpener = null;
+  if (location.hash.startsWith("#class=")) history.replaceState({}, "", location.pathname + location.search);
+});
+
+window.addEventListener("popstate", () => {
+  if (dialog.open) dialog.close();
 });
 
 q?.addEventListener("input", () => {
   clearTimeout(t);
-  t = setTimeout(() => loadCards("/partials/cards?query=" + encodeURIComponent(q.value)), 300);
+  t = setTimeout(() => {
+    const p = currentFilterParams();
+    p.delete("query");
+    if (q.value) p.set("query", q.value);
+    loadCards("/partials/cards?" + p.toString());
+  }, 300);
 });
 
 results?.addEventListener("click", async (e) => {
@@ -61,12 +83,32 @@ async function dayClick(e) {
   document.querySelectorAll(".week button").forEach((b) => b.removeAttribute("aria-current"));
   const weekBtn = document.querySelector('.week button[data-day="' + btn.dataset.day + '"]');
   if (weekBtn) weekBtn.setAttribute("aria-current", "true");
-  const url = btn.dataset.day ? "/partials/cards?day=" + btn.dataset.day : "/partials/cards";
-  await loadCards(url);
+  const p = currentFilterParams();
+  p.delete("day");
+  if (btn.dataset.day) p.set("day", btn.dataset.day);
+  await loadCards("/partials/cards?" + p.toString());
 }
 
 document.querySelector(".week")?.addEventListener("click", dayClick);
 document.querySelector(".month")?.addEventListener("click", dayClick);
-document.getElementById("filtersBtn")?.addEventListener("click", () => {
-  document.getElementById("filtersSection")?.toggleAttribute("hidden");
+document.getElementById("filtersBtn")?.addEventListener("click", (e) => {
+  const sec = document.getElementById("filtersSection");
+  sec?.toggleAttribute("hidden");
+  e.currentTarget.setAttribute("aria-expanded", String(!sec?.hasAttribute("hidden")));
 });
+document.getElementById("viewToggle")?.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-view]");
+  if (!btn) return;
+  document.body.dataset.view = btn.dataset.view;
+  document.querySelectorAll("#viewToggle button").forEach((b) => {
+    b.setAttribute("aria-pressed", String(b === btn));
+  });
+  const showingMonth = btn.dataset.view === "month";
+  document.getElementById("results")?.setAttribute("aria-hidden", String(showingMonth));
+  document.querySelector(".month-wrap")?.setAttribute("aria-hidden", String(!showingMonth));
+});
+
+if (location.hash.startsWith("#class=")) {
+  const deepId = location.hash.slice("#class=".length + 1);
+  if (/^[A-Za-z0-9-]+$/.test(deepId)) openDetail(deepId, null);
+}

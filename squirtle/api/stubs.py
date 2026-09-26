@@ -82,5 +82,8 @@ CLASSES = [
 ]
 
 
+STUB_SCRAPED_AT = "2026-01-16T10:00:00+00:00"
+
+
 def get_classes():
-    return [dict(r) for r in CLASSES]
+    return [dict(r, scraped_at=STUB_SCRAPED_AT) for r in CLASSES]

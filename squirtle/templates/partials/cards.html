@@ -1,19 +1,27 @@
 {% if classes %}
+<div class="tl">
 {% for c in classes %}
-<article class="card studio-{{ c.studio_slug }}" data-id="{{ c.id }}">
-  <div class="card-main">
-    <h2>{{ c.song or "Training" }} — {{ c.artist or c.studio_raw }}</h2>
-    <p class="meta">{{ c.teacher or "TBA" }} · {{ c.difficulty }}{% if c.song_section %} · {{ c.song_section }}{% endif %}</p>
-    <p class="meta"><time datetime="{{ c.start_at }}">{{ c.start_label }}</time> · {{ c.venue }}, {{ c.area }}</p>
-  </div>
-  <div class="card-side">
-    <span class="mark" aria-hidden="true">{{ c.studio_raw[:2] }}</span>
-    <a href="{{ c.booking_url }}" target="_blank" rel="noopener">Book</a>
-    <button type="button" data-open="{{ c.id }}">Details</button>
-  </div>
-</article>
+<div class="trow">
+  <div class="gutter"><time datetime="{{ c.start_at }}">{{ c.start_label }}</time></div>
+  <article class="card studio-{{ c.studio_slug }} tint-{{ c.studio_slug }}" data-id="{{ c.id }}">
+    <div class="card-main">
+      <h2>{{ c.song or "Training" }}</h2>
+      <p class="sub">{{ c.artist or c.studio_raw }}</p>
+      <p class="meta">{{ c.teacher or "TBA" }}</p>
+      <p class="meta"><span class="level">{{ c.difficulty }}</span>{% if c.song_section %}<span>{{ c.song_section }}</span>{% endif %}</p>
+      <p class="meta"><time datetime="{{ c.start_at }}">{{ c.start_label }} - {{ c.end_label }}</time><span>{{ c.duration_label }}</span></p>
+      <p class="meta">{{ c.venue }}, {{ c.area }}</p>
+    </div>
+    <div class="card-side">
+      <span class="mark" aria-hidden="true">{{ c.studio_raw[:2] }}</span>
+      <a href="{{ c.booking_url }}" target="_blank" rel="noopener">Book</a>
+      <button type="button" data-open="{{ c.id }}">Details</button>
+    </div>
+  </article>
+</div>
 {% endfor %}
+</div>
 {% else %}
-{% if day %}<p>No classes today. <a href="/">Today</a> <button type="button" id="clearFilters">Clear filters</button></p>
+{% if day %}<p>No classes today. <a id="todayLink" href="/?query={{ query|urlencode }}{% for s in studios %}&studio={{ s }}{% endfor %}{% for d in difficulties %}&difficulty={{ d }}{% endfor %}{% for p in prices %}&price={{ p }}{% endfor %}{% for a in areas %}&area={{ a }}{% endfor %}">Today</a> <button type="button" id="clearFilters">Clear filters</button></p>
 {% else %}<p>No classes found. <button type="button" id="clearFilters">Clear filters</button></p>{% endif %}
 {% endif %}

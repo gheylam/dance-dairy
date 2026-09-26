@@ -7,26 +7,21 @@
 <meta name="description" content="One searchable calendar for London K-pop dance classes.">
 <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body data-view="list">
 <header class="top">
-  <a class="logo" href="/">K</a>
-  <input id="q" name="query" type="search" placeholder="Search song, artist, teacher, studio" aria-label="Search classes" autocomplete="off">
-  <button id="filtersBtn" type="button">Filters <span id="fcount">{% if fcount %}({{ fcount }}){% endif %}</span></button>
+  <a class="logo" href="/" aria-label="Klassified home">K</a>
+  <input id="q" name="query" type="search" value="{{ query }}" placeholder="Search" aria-label="Search classes" autocomplete="off">
 </header>
+<div class="subhead">
+  <form method="get" action="/"><input type="month" name="month" value="{{ active_month }}" aria-label="Pick month"></form>
+  <div id="viewToggle" role="group" aria-label="View"><button type="button" data-view="list" aria-pressed="true">List</button><button type="button" data-view="month" aria-pressed="false">Month</button></div>
+  <button id="filtersBtn" type="button" aria-expanded="false" aria-controls="filtersSection">Filters{% if fcount %} ({{ fcount }}){% endif %}</button>
+</div>
 <p class="landing">London K-pop classes, one calendar. Find a class by song or artist in seconds.</p>
-<p class="stale">Last updated 2h ago</p>
-<nav class="week" aria-label="Week of January 12 to 18, 2026">
-  <button type="button" data-day="">All</button>
-  <button type="button" data-day="2026-01-12">Mon 12</button>
-  <button type="button" data-day="2026-01-13">Tue 13</button>
-  <button type="button" data-day="2026-01-14">Wed 14</button>
-  <button type="button" data-day="2026-01-15">Thu 15</button>
-  <button type="button" data-day="2026-01-16" aria-current="true">Fri 16</button>
-  <button type="button" data-day="2026-01-17">Sat 17</button>
-  <button type="button" data-day="2026-01-18">Sun 18</button>
-</nav>
+<p class="stale">{{ stale_label }}</p>
+<nav class="week" aria-label="{{ week_label }}">{% for d in week %}<button type="button" data-day="{{ d.date }}"{% if d.selected %} aria-current="true"{% endif %}><span>{{ d.dow }}</span><span>{{ d.day }}</span></button>{% endfor %}</nav>
 <main id="results">{% include "partials/cards.html" %}</main>
-<section aria-label="Month view">{% include "partials/month.html" %}</section>
+<div class="month-wrap"><section aria-label="Month view">{% include "partials/month.html" %}</section></div>
 <section aria-label="Filters" id="filtersSection">{% include "partials/filters.html" %}</section>
 <dialog id="detail"><div id="detailBody"></div><form method="dialog"><button>Close</button></form></dialog>
 <script src="/static/app.js"></script>
