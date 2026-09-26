@@ -3,11 +3,56 @@
   <span>Week of {{ week_range[0].date }} to {{ week_range[6].date }}</span>
   <button type="button" data-day="{{ next_day }}" aria-label="Next week">Next</button>
 </div>
-<div class="weekgrid" role="grid" aria-label="Week view">
-{% for d in week_range %}
-  <div class="wday" role="gridcell">
-    <button type="button" class="wday-head" data-day="{{ d.date }}"{% if d.selected %} aria-current="true"{% endif %}><span>{{ d.dow }}</span><span>{{ d.day }}</span></button>
-    {% for c in classes_by_day.get(d.date, []) %}<button type="button" class="chip studio-{{ c.studio_slug }}" data-open="{{ c.id }}">{{ c.start_label }} {{ c.song or "Training" }}</button>{% else %}<span class="wempty">—</span>{% endfor %}
+{% if week_by_day is defined %}
+<div class="week-timegrid" aria-label="Week calendar time grid">
+  <div class="week-hours" aria-hidden="true">
+    <div class="week-corner"></div>
+    {% for h in week_hours %}<div class="hour-row">{{ h.label }}</div>{% endfor %}
   </div>
-{% endfor %}
+  {% for d in week_range %}
+  {% set day = week_by_day.get(d.date, {}) %}
+  {% set day_events = day.get('events', []) %}
+  <div class="wday-col" aria-label="{{ d.date }}">
+    <button type="button" class="wday-head" data-day="{{ d.date }}"{% if d.selected %} aria-current="true"{% endif %}><span>{{ d.dow }}</span><span>{{ d.day }}</span></button>
+    <div class="day-column">
+      {% for h in week_hours %}<div class="hour-cell"></div>{% endfor %}
+      {% for c in day_events %}<button type="button" class="chip event-block studio-{{ c.studio_slug }}" data-open="{{ c.id }}" data-start="{{ c.start_at }}" title="{{ c.start_label }} {{ c.song or 'Training' }} — {{ c.teacher or 'TBA' }}" style="top:{{ c.top_px }}px;height:{{ c.height_px }}px;left:{{ c.left_px }}px;width:calc(100% - {{ c.left_px }}px);z-index:{{ c.col }};">{{ c.start_label }} {{ c.song or "Training" }}</button>{% endfor %}
+      {% if not day_events %}<span class="wempty">—</span>{% endif %}
+      {% if day.get('overflow', 0) %}<a class="overflow-badge" href="/?view=list&day={{ d.date }}">+{{ day.overflow }} more</a>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+<div class="week-agenda">
+  {% for d in week_range %}
+  {% set day_items = (classes_by_day.get(d.date, []) | sort(attribute='start_at')) %}
+  {% if day_items %}
+  <section class="day-group" data-date="{{ d.date }}">
+    <h2 class="day-header"><time datetime="{{ d.date }}">{{ d.dow }} {{ d.day }}</time><span class="day-count">{{ day_items|length }} class{{ 'es' if day_items|length != 1 else '' }}</span></h2>
+    {% for c in day_items %}
+    <div class="trow">
+      <div class="gutter"><time datetime="{{ c.start_at }}">{{ c.start_label }}</time></div>
+      <article class="card studio-{{ c.studio_slug }} tint-{{ c.studio_slug }}" data-id="{{ c.id }}">
+        <div class="card-main">
+          <h3>{{ c.song or "Training" }}</h3>
+          <p class="sub">{{ c.artist or c.studio_raw }}</p>
+          <p class="meta">{{ c.teacher or "TBA" }} · {{ c.studio_raw }}</p>
+          <p class="meta"><span class="level">{{ c.difficulty }}</span></p>
+          <p class="meta"><time datetime="{{ c.start_at }}">{{ c.start_label }} - {{ c.end_label }}</time> <span>{{ c.duration_label }}</span></p>
+          <p class="meta">{{ c.venue }}, {{ c.area }}</p>
+        </div>
+        <div class="card-side">
+          <a href="{{ c.booking_url }}" target="_blank" rel="noopener">Book</a>
+          <button type="button" data-open="{{ c.id }}">Details</button>
+        </div>
+      </article>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+  {% endfor %}
+  {% set ns = namespace(total=0) %}
+  {% for d in week_range %}{% set ns.total = ns.total + classes_by_day.get(d.date, [])|length %}{% endfor %}
+  {% if not ns.total %}<p class="wempty">No classes this week.</p>{% endif %}
 </div>

@@ -2,6 +2,7 @@ import calendar as _cal
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlencode
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -145,19 +146,7 @@ def build_week(active_day="2026-01-16"):
 
 
 def build_week_range(active_day="2026-01-16"):
-    try:
-        base = datetime.fromisoformat(active_day).date()
-    except Exception:
-        base = datetime.fromisoformat("2026-01-16").date()
-        active_day = "2026-01-16"
-    monday = base - timedelta(days=base.weekday())
-    names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    out = []
-    for i in range(7):
-        d = monday + timedelta(days=i)
-        iso = d.isoformat()
-        out.append({"date": iso, "dow": names[i], "day": d.day, "selected": iso == active_day})
-    return out
+    return build_week(active_day)
 
 
 def shift_day(day, delta):
@@ -180,17 +169,29 @@ def group_by_day(rows):
 
 def build_month(year, month):
     cal = _cal.Calendar(firstweekday=0)
+    enriched = {r["id"]: r for r in enrich(get_classes())}
     by_date = {}
     for r in get_classes():
-        d = r["start_at"][:10]
-        by_date.setdefault(d, [])
-        if r["studio_slug"] not in by_date[d]:
-            by_date[d].append(r["studio_slug"])
+        by_date.setdefault(r["start_at"][:10], []).append(r)
+    for lst in by_date.values():
+        lst.sort(key=lambda r: r["start_at"])
     weeks = []
     for week in cal.monthdatescalendar(year, month):
-        weeks.append([{"day": d.day, "in_month": d.month == month,
-                       "date": d.isoformat(), "dots": by_date.get(d.isoformat(), [])}
-                      for d in week])
+        row = []
+        for d in week:
+            iso = d.isoformat()
+            items = by_date.get(iso, [])
+            studios = []
+            for x in items:
+                if x["studio_slug"] not in studios:
+                    studios.append(x["studio_slug"])
+            row.append({"day": d.day, "in_month": d.month == month,
+                        "date": iso, "dots": studios,
+                        "classes": [{"id": x["id"], "song": x.get("song"),
+                                     "start_label": enriched[x["id"]]["start_label"],
+                                     "studio_slug": x["studio_slug"]} for x in items],
+                        "total": len(items)})
+        weeks.append(row)
     return weeks
 
 
@@ -205,10 +206,130 @@ def parse_month(value):
     return 2026, 1
 
 
+VALID_VIEWS = ("list", "week", "month")
+
+
+def valid_view(v: str) -> str:
+    return v if v in VALID_VIEWS else "list"
+
+
+def shift_month(value: str, delta: int) -> str:
+    y, m = parse_month(value)
+    m += delta
+    while m < 1:
+        m += 12
+        y -= 1
+    while m > 12:
+        m -= 12
+        y += 1
+    return f"{y:04d}-{m:02d}"
+
+
+WEEK_HOUR_START = 6
+WEEK_HOUR_END = 23
+PX_PER_HOUR = 48
+MAX_EVENT_COLS = 3
+STAGGER_PCT = 18
+STAGGER_PX = 14
+
+FILTER_KEYS = ("query", "studio", "difficulty", "price", "area", "song", "artist", "teacher")
+
+
+def filter_qs(query_params) -> str:
+    pairs = [(k, v) for k, v in query_params.multi_items() if k in FILTER_KEYS and v]
+    return ("&" + urlencode(pairs)) if pairs else ""
+
+
+def build_hours(start=WEEK_HOUR_START, end=WEEK_HOUR_END):
+    out = []
+    for h in range(start, end + 1):
+        suffix = "AM" if h < 12 else "PM"
+        out.append({"hour": h, "label": f"{h % 12 or 12} {suffix}"})
+    return out
+
+
+def week_hour_bounds(rows):
+    start, end = WEEK_HOUR_START, WEEK_HOUR_END
+    for r in rows:
+        start = min(start, _minutes(r["start_at"]) // 60)
+        end = max(end, -(-_minutes(r["end_at"]) // 60))
+    return start, min(24, end)
+
+
+def _minutes(iso: str) -> int:
+    dt = datetime.fromisoformat(iso).astimezone(LONDON)
+    return dt.hour * 60 + dt.minute
+
+
+def layout_day_events(rows, week_hour_start=WEEK_HOUR_START):
+    items = sorted(enrich(rows), key=lambda r: r["start_at"])
+    shown, overflow = [], [0]
+
+    def flush(cluster):
+        if not cluster:
+            return
+        lanes = min(max(e["col"] for e in cluster) + 1, MAX_EVENT_COLS)
+        for e in cluster:
+            if e["col"] < MAX_EVENT_COLS:
+                e["cols"] = lanes
+                e["left_px"] = e["col"] * STAGGER_PX
+                e["left_pct"] = e["col"] * STAGGER_PCT
+                e["width_pct"] = 100 - e["left_pct"]
+                s = _minutes(e["start_at"])
+                end = _minutes(e["end_at"])
+                e["top_px"] = max(0, int((s - week_hour_start * 60) * PX_PER_HOUR / 60))
+                e["height_px"] = max(24, int((end - s) * PX_PER_HOUR / 60))
+                shown.append(e)
+            else:
+                overflow[0] += 1
+
+    active, cluster = [], []
+    for r in items:
+        s = _minutes(r["start_at"])
+        active = [a for a in active if a["_end"] > s]
+        if not active and cluster:
+            flush(cluster)
+            cluster = []
+        used = {a["col"] for a in active}
+        col = 0
+        while col in used:
+            col += 1
+        entry = dict(r)
+        entry["col"] = col
+        entry["_end"] = _minutes(r["end_at"])
+        active.append(entry)
+        cluster.append(entry)
+    flush(cluster)
+    return {"events": shown, "overflow": overflow[0]}
+
+
+def sorted_day_groups(rows):
+    by_date = group_by_day(enrich(rows))
+    out = []
+    for d in sorted(by_date):
+        try:
+            label = datetime.fromisoformat(d).strftime("%a %b %d")
+        except Exception:
+            label = d
+        out.append({"date": d, "label": label,
+                    "classes": sorted(by_date[d], key=lambda r: r["start_at"])})
+    return out
+
+
 def create_app():
     app = FastAPI(title="Klassified")
     app.mount("/static", StaticFiles(directory=str(BASE / "static")), name="static")
     tpl = Jinja2Templates(directory=str(BASE / "templates"))
+
+    def asset_v() -> str:
+        try:
+            files = [(BASE / "static" / n).stat().st_mtime
+                     for n in ("style.css", "app.js")]
+            return str(int(max(files)))
+        except Exception:
+            return "1"
+
+    tpl.env.globals["asset_v"] = asset_v
 
     @app.get("/api/classes")
     def list_classes(query: str = "", studio: list = Query([]), difficulty: list = Query([]),
@@ -221,23 +342,36 @@ def create_app():
     def home(request: Request, query: str = "", studio: list = Query([]),
              difficulty: list = Query([]), price: list = Query([]),
              area: list = Query([]), day: str = "", month: str = "2026-01",
-             song: list = Query([]), artist: list = Query([]), teacher: list = Query([])):
+             song: list = Query([]), artist: list = Query([]), teacher: list = Query([]),
+             view: str = "list"):
         all_rows = get_classes()
         rows = enrich(apply_filters(all_rows, query, studio, difficulty, price, area, day,
                                     song, artist, teacher))
         y, m = parse_month(month)
+        active_month = f"{y:04d}-{m:02d}"
         display_day = day if valid_day(day) else "2026-01-16"
         wk = build_week(display_day)
         week_label = f"Week of {wk[0]['date']} to {wk[6]['date']}"
         wrange = build_week_range(display_day)
         first = all_rows[0] if all_rows else {}
-        return tpl.TemplateResponse(request, "agenda.html", {"request": request, "classes": rows,
+        h_start, h_end = week_hour_bounds(rows)
+        week_by_day = {}
+        for d in wrange:
+            week_by_day[d["date"]] = layout_day_events(
+                [r for r in rows if r["start_at"][:10] == d["date"]], h_start)
+        return tpl.TemplateResponse(request, "agenda.html", {"request": request,
                                                              "month": build_month(y, m),
                                                              "week": wk, "week_label": week_label,
                                                              "week_range": wrange,
+                                                             "week_by_day": week_by_day,
+                                                             "week_hours": build_hours(h_start, h_end),
                                                              "classes_by_day": group_by_day(rows),
+                                                             "day_groups": sorted_day_groups(rows),
                                                              "prev_day": shift_day(display_day, -7),
                                                              "next_day": shift_day(display_day, 7),
+                                                             "prev_month": shift_month(active_month, -1),
+                                                             "next_month": shift_month(active_month, 1),
+                                                             "filter_qs": filter_qs(request.query_params),
                                                              "stale_label": stale_label(first.get("scraped_at", "2026-01-16T10:00:00+00:00")),
                                                              "query": query, "studios": as_list(studio),
                                                              "difficulties": as_list(difficulty),
@@ -247,7 +381,8 @@ def create_app():
                                                              "song_list": distinct("song"),
                                                              "artist_list": distinct("artist"),
                                                              "teacher_list": distinct("teacher"),
-                                                             "day": day, "active_month": f"{y:04d}-{m:02d}",
+                                                             "day": day, "active_month": active_month,
+                                                             "view": valid_view(view),
                                                              "fcount": filter_count(query, studio, difficulty, price, area, day,
                                                                                     song, artist, teacher)})
 
@@ -258,7 +393,8 @@ def create_app():
               song: list = Query([]), artist: list = Query([]), teacher: list = Query([])):
         rows = enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, day,
                                     song, artist, teacher))
-        return tpl.TemplateResponse(request, "partials/cards.html", {"request": request, "classes": rows,
+        return tpl.TemplateResponse(request, "partials/cards.html", {"request": request,
+                                                                     "day_groups": sorted_day_groups(rows),
                                                                      "day": day, "query": query,
                                                                      "studios": as_list(studio),
                                                                      "difficulties": as_list(difficulty),
@@ -277,8 +413,15 @@ def create_app():
                                     song, artist, teacher))
         display_day = day if valid_day(day) else "2026-01-16"
         wrange = build_week_range(display_day)
+        h_start, h_end = week_hour_bounds(rows)
+        week_by_day = {}
+        for d in wrange:
+            week_by_day[d["date"]] = layout_day_events(
+                [r for r in rows if r["start_at"][:10] == d["date"]], h_start)
         return tpl.TemplateResponse(request, "partials/week.html", {"request": request,
                                                                     "week_range": wrange,
+                                                                    "week_by_day": week_by_day,
+                                                                    "week_hours": build_hours(h_start, h_end),
                                                                     "classes_by_day": group_by_day(rows),
                                                                     "prev_day": shift_day(display_day, -7),
                                                                     "next_day": shift_day(display_day, 7)})
