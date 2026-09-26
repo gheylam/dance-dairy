@@ -74,7 +74,8 @@ def enrich(rows):
     return out
 
 
-def apply_filters(rows, query="", studio=None, difficulties=None, prices=None, areas=None, day=""):
+def apply_filters(rows, query="", studio=None, difficulties=None, prices=None, areas=None, day="",
+                  songs=None, artists=None, teachers=None):
     q = (query or "").lower()
     out = rows
     if q:
@@ -96,15 +97,28 @@ def apply_filters(rows, query="", studio=None, difficulties=None, prices=None, a
     ars = [a for a in ars if a]
     if ars:
         out = [r for r in out if area_to_location(r.get("area")) in ars]
+    sgs = [songs] if isinstance(songs, str) else (songs or [])
+    sgs = [s for s in sgs if s]
+    if sgs:
+        out = [r for r in out if r.get("song") in sgs]
+    ats = [artists] if isinstance(artists, str) else (artists or [])
+    ats = [a for a in ats if a]
+    if ats:
+        out = [r for r in out if r.get("artist") in ats]
+    tch = [teachers] if isinstance(teachers, str) else (teachers or [])
+    tch = [t for t in tch if t]
+    if tch:
+        out = [r for r in out if r.get("teacher") in tch]
     if day and valid_day(day):
         out = [r for r in out if r["start_at"][:10] == day]
     return out
 
 
-def filter_count(query="", studio=None, difficulties=None, prices=None, areas=None, day=""):
+def filter_count(query="", studio=None, difficulties=None, prices=None, areas=None, day="",
+                 songs=None, artists=None, teachers=None):
     studios = [studio] if isinstance(studio, str) else (studio or [])
     n = (1 if query else 0) + len([s for s in studios if s]) + (1 if valid_day(day) else 0)
-    for v in (difficulties, prices, areas):
+    for v in (difficulties, prices, areas, songs, artists, teachers):
         vals = [v] if isinstance(v, str) else (v or [])
         n += len([x for x in vals if x])
     return n
@@ -128,6 +142,40 @@ def build_week(active_day="2026-01-16"):
         iso = d.isoformat()
         out.append({"date": iso, "dow": names[i], "day": d.day, "selected": iso == active_day})
     return out
+
+
+def build_week_range(active_day="2026-01-16"):
+    try:
+        base = datetime.fromisoformat(active_day).date()
+    except Exception:
+        base = datetime.fromisoformat("2026-01-16").date()
+        active_day = "2026-01-16"
+    monday = base - timedelta(days=base.weekday())
+    names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    out = []
+    for i in range(7):
+        d = monday + timedelta(days=i)
+        iso = d.isoformat()
+        out.append({"date": iso, "dow": names[i], "day": d.day, "selected": iso == active_day})
+    return out
+
+
+def shift_day(day, delta):
+    try:
+        return (datetime.fromisoformat(day).date() + timedelta(days=delta)).isoformat()
+    except Exception:
+        return "2026-01-16"
+
+
+def distinct(field):
+    return sorted({r.get(field) for r in get_classes() if r.get(field)})
+
+
+def group_by_day(rows):
+    by_date = {}
+    for r in rows:
+        by_date.setdefault(r["start_at"][:10], []).append(r)
+    return by_date
 
 
 def build_month(year, month):
@@ -164,41 +212,76 @@ def create_app():
 
     @app.get("/api/classes")
     def list_classes(query: str = "", studio: list = Query([]), difficulty: list = Query([]),
-                     price: list = Query([]), area: list = Query([]), day: str = ""):
-        return enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, day))
+                     price: list = Query([]), area: list = Query([]), day: str = "",
+                     song: list = Query([]), artist: list = Query([]), teacher: list = Query([])):
+        return enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, day,
+                                    song, artist, teacher))
 
     @app.get("/", response_class=HTMLResponse)
     def home(request: Request, query: str = "", studio: list = Query([]),
              difficulty: list = Query([]), price: list = Query([]),
-             area: list = Query([]), day: str = "", month: str = "2026-01"):
+             area: list = Query([]), day: str = "", month: str = "2026-01",
+             song: list = Query([]), artist: list = Query([]), teacher: list = Query([])):
         all_rows = get_classes()
-        rows = enrich(apply_filters(all_rows, query, studio, difficulty, price, area, day))
+        rows = enrich(apply_filters(all_rows, query, studio, difficulty, price, area, day,
+                                    song, artist, teacher))
         y, m = parse_month(month)
         display_day = day if valid_day(day) else "2026-01-16"
         wk = build_week(display_day)
         week_label = f"Week of {wk[0]['date']} to {wk[6]['date']}"
+        wrange = build_week_range(display_day)
         first = all_rows[0] if all_rows else {}
         return tpl.TemplateResponse(request, "agenda.html", {"request": request, "classes": rows,
                                                              "month": build_month(y, m),
                                                              "week": wk, "week_label": week_label,
+                                                             "week_range": wrange,
+                                                             "classes_by_day": group_by_day(rows),
+                                                             "prev_day": shift_day(display_day, -7),
+                                                             "next_day": shift_day(display_day, 7),
                                                              "stale_label": stale_label(first.get("scraped_at", "2026-01-16T10:00:00+00:00")),
                                                              "query": query, "studios": as_list(studio),
                                                              "difficulties": as_list(difficulty),
                                                              "prices": as_list(price), "areas": as_list(area),
+                                                             "songs": as_list(song), "artists": as_list(artist),
+                                                             "teachers": as_list(teacher),
+                                                             "song_list": distinct("song"),
+                                                             "artist_list": distinct("artist"),
+                                                             "teacher_list": distinct("teacher"),
                                                              "day": day, "active_month": f"{y:04d}-{m:02d}",
-                                                             "fcount": filter_count(query, studio, difficulty, price, area, day)})
+                                                             "fcount": filter_count(query, studio, difficulty, price, area, day,
+                                                                                    song, artist, teacher)})
 
     @app.get("/partials/cards", response_class=HTMLResponse)
     def cards(request: Request, query: str = "", studio: list = Query([]),
               difficulty: list = Query([]), price: list = Query([]),
-              area: list = Query([]), day: str = ""):
-        rows = enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, day))
+              area: list = Query([]), day: str = "",
+              song: list = Query([]), artist: list = Query([]), teacher: list = Query([])):
+        rows = enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, day,
+                                    song, artist, teacher))
         return tpl.TemplateResponse(request, "partials/cards.html", {"request": request, "classes": rows,
                                                                      "day": day, "query": query,
                                                                      "studios": as_list(studio),
                                                                      "difficulties": as_list(difficulty),
                                                                      "prices": as_list(price),
-                                                                     "areas": as_list(area)})
+                                                                     "areas": as_list(area),
+                                                                     "songs": as_list(song),
+                                                                     "artists": as_list(artist),
+                                                                     "teachers": as_list(teacher)})
+
+    @app.get("/partials/week", response_class=HTMLResponse)
+    def week(request: Request, query: str = "", studio: list = Query([]),
+             difficulty: list = Query([]), price: list = Query([]),
+             area: list = Query([]), day: str = "",
+             song: list = Query([]), artist: list = Query([]), teacher: list = Query([])):
+        rows = enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, "",
+                                    song, artist, teacher))
+        display_day = day if valid_day(day) else "2026-01-16"
+        wrange = build_week_range(display_day)
+        return tpl.TemplateResponse(request, "partials/week.html", {"request": request,
+                                                                    "week_range": wrange,
+                                                                    "classes_by_day": group_by_day(rows),
+                                                                    "prev_day": shift_day(display_day, -7),
+                                                                    "next_day": shift_day(display_day, 7)})
 
     @app.get("/partials/detail/{cid}", response_class=HTMLResponse)
     def detail(request: Request, cid: str):

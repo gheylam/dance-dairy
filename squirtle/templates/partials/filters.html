@@ -27,6 +27,18 @@
     <label><input type="checkbox" name="area" value="West London"{% if "West London" in areas %} checked{% endif %}> West London</label>
     <label><input type="checkbox" name="area" value="Outside London"{% if "Outside London" in areas %} checked{% endif %}> Outside London</label>
   </fieldset>
+  <fieldset><legend>Song</legend>
+    {% for s in song_list %}<label><input type="checkbox" name="song" value="{{ s }}"{% if s in songs %} checked{% endif %}> {{ s }}</label>
+    {% endfor %}
+  </fieldset>
+  <fieldset><legend>Artist</legend>
+    {% for a in artist_list %}<label><input type="checkbox" name="artist" value="{{ a }}"{% if a in artists %} checked{% endif %}> {{ a }}</label>
+    {% endfor %}
+  </fieldset>
+  <fieldset><legend>Teacher</legend>
+    {% for t in teacher_list %}<label><input type="checkbox" name="teacher" value="{{ t }}"{% if t in teachers %} checked{% endif %}> {{ t }}</label>
+    {% endfor %}
+  </fieldset>
   <button type="submit">Apply</button>
   <a href="/">Clear all</a>
 </form>

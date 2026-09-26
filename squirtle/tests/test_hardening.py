@@ -7,8 +7,9 @@ client = TestClient(create_app())
 def test_home_ssr_applies_studio_filter():
     r = client.get("/", params={"studio": "lum3x"})
     assert r.status_code == 200
-    assert "Teeth" in r.text
-    assert "Zen" not in r.text
+    results = r.text.split('<main id="results">')[1].split("</main>")[0]
+    assert "Teeth" in results
+    assert "Zen" not in results
 
 
 def test_home_ssr_empty_day():
@@ -24,9 +25,10 @@ def test_multi_studio_or_within_group():
 
 def test_cards_have_keyboard_open_control():
     r = client.get("/")
-    n_cards = r.text.count("<article")
+    results = r.text.split('<main id="results">')[1].split("</main>")[0]
+    n_cards = results.count("<article")
     assert n_cards > 0
-    assert r.text.count('data-open=') == n_cards
+    assert results.count('data-open=') == n_cards
 
 
 def test_fmt_converts_to_europe_london():

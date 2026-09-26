@@ -91,6 +91,12 @@ async function dayClick(e) {
 
 document.querySelector(".week")?.addEventListener("click", dayClick);
 document.querySelector(".month")?.addEventListener("click", dayClick);
+document.getElementById("weekWrap")?.addEventListener("click", dayClick);
+document.getElementById("weekWrap")?.addEventListener("click", async (e) => {
+  const opener = e.target.closest("[data-open]");
+  if (!opener) return;
+  await openDetail(opener.dataset.open, opener);
+});
 document.getElementById("filtersBtn")?.addEventListener("click", (e) => {
   const sec = document.getElementById("filtersSection");
   sec?.toggleAttribute("hidden");
@@ -99,13 +105,14 @@ document.getElementById("filtersBtn")?.addEventListener("click", (e) => {
 document.getElementById("viewToggle")?.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-view]");
   if (!btn) return;
-  document.body.dataset.view = btn.dataset.view;
+  const view = btn.dataset.view;
+  document.body.dataset.view = view;
   document.querySelectorAll("#viewToggle button").forEach((b) => {
     b.setAttribute("aria-pressed", String(b === btn));
   });
-  const showingMonth = btn.dataset.view === "month";
-  document.getElementById("results")?.setAttribute("aria-hidden", String(showingMonth));
-  document.querySelector(".month-wrap")?.setAttribute("aria-hidden", String(!showingMonth));
+  document.getElementById("results")?.setAttribute("aria-hidden", String(view !== "list"));
+  document.getElementById("weekWrap")?.setAttribute("aria-hidden", String(view !== "week"));
+  document.querySelector(".month-wrap")?.setAttribute("aria-hidden", String(view !== "month"));
 });
 
 if (location.hash.startsWith("#class=")) {

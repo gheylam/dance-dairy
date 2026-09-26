@@ -1,0 +1,13 @@
+<div class="weeknav">
+  <button type="button" data-day="{{ prev_day }}" aria-label="Previous week">Prev</button>
+  <span>Week of {{ week_range[0].date }} to {{ week_range[6].date }}</span>
+  <button type="button" data-day="{{ next_day }}" aria-label="Next week">Next</button>
+</div>
+<div class="weekgrid" role="grid" aria-label="Week view">
+{% for d in week_range %}
+  <div class="wday" role="gridcell">
+    <button type="button" class="wday-head" data-day="{{ d.date }}"{% if d.selected %} aria-current="true"{% endif %}><span>{{ d.dow }}</span><span>{{ d.day }}</span></button>
+    {% for c in classes_by_day.get(d.date, []) %}<button type="button" class="chip studio-{{ c.studio_slug }}" data-open="{{ c.id }}">{{ c.start_label }} {{ c.song or "Training" }}</button>{% else %}<span class="wempty">—</span>{% endfor %}
+  </div>
+{% endfor %}
+</div>
