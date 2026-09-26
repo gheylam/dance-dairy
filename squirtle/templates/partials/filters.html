@@ -6,6 +6,27 @@
     <label><input type="checkbox" name="studio" value="kpoplondonmin"{% if "kpoplondonmin" in studios %} checked{% endif %}> kpoplondonmin</label>
     <label><input type="checkbox" name="studio" value="haven"{% if "haven" in studios %} checked{% endif %}> Haven</label>
   </fieldset>
+  <fieldset><legend>Pricing</legend>
+    <label><input type="checkbox" name="price" value="0-10"{% if "0-10" in prices %} checked{% endif %}> £0-10</label>
+    <label><input type="checkbox" name="price" value="11-15"{% if "11-15" in prices %} checked{% endif %}> £11-15</label>
+    <label><input type="checkbox" name="price" value="16-20"{% if "16-20" in prices %} checked{% endif %}> £16-20</label>
+    <label><input type="checkbox" name="price" value="21-25"{% if "21-25" in prices %} checked{% endif %}> £21-25</label>
+    <label><input type="checkbox" name="price" value="26+"{% if "26+" in prices %} checked{% endif %}> £26+</label>
+  </fieldset>
+  <fieldset><legend>Difficulty</legend>
+    <label><input type="checkbox" name="difficulty" value="All Levels"{% if "All Levels" in difficulties %} checked{% endif %}> All Levels</label>
+    <label><input type="checkbox" name="difficulty" value="Beginners"{% if "Beginners" in difficulties %} checked{% endif %}> Beginners</label>
+    <label><input type="checkbox" name="difficulty" value="Intermediate"{% if "Intermediate" in difficulties %} checked{% endif %}> Intermediate</label>
+    <label><input type="checkbox" name="difficulty" value="Advanced"{% if "Advanced" in difficulties %} checked{% endif %}> Advanced</label>
+  </fieldset>
+  <fieldset><legend>Location</legend>
+    <label><input type="checkbox" name="area" value="Central London"{% if "Central London" in areas %} checked{% endif %}> Central London</label>
+    <label><input type="checkbox" name="area" value="East London"{% if "East London" in areas %} checked{% endif %}> East London</label>
+    <label><input type="checkbox" name="area" value="North London"{% if "North London" in areas %} checked{% endif %}> North London</label>
+    <label><input type="checkbox" name="area" value="South London"{% if "South London" in areas %} checked{% endif %}> South London</label>
+    <label><input type="checkbox" name="area" value="West London"{% if "West London" in areas %} checked{% endif %}> West London</label>
+    <label><input type="checkbox" name="area" value="Outside London"{% if "Outside London" in areas %} checked{% endif %}> Outside London</label>
+  </fieldset>
   <button type="submit">Apply</button>
   <a href="/">Clear all</a>
 </form>
