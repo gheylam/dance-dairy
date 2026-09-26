@@ -1,0 +1,16 @@
+:root { --dgc: #6d5bd0; --lum: #b98a00; --ven: #111; --kmin: #c2437e; --haven: #4a7fd4; --ink: #1a1a1a; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); font: 16px/1.45 system-ui, sans-serif; max-width: 640px; margin-inline: auto; padding: 12px; }
+.top { display: flex; gap: 8px; align-items: center; }
+.logo { font-weight: 800; font-size: 28px; color: #4a7fd4; text-decoration: none; }
+#q { flex: 1; padding: 10px 12px; border-radius: 999px; border: 1px solid #ccd; }
+.card { display: flex; justify-content: space-between; gap: 8px; border: 1px solid #e3e3ea; border-left-width: 6px; border-radius: 10px; padding: 10px 12px; margin: 8px 0; background: #fff; }
+.card h2 { font-size: 15px; margin: 0 0 4px; }
+.meta { font-size: 13px; color: #444; margin: 2px 0; }
+.studio-dgcdance { border-left-color: var(--dgc); } .studio-dgcdance h2 { color: var(--dgc); }
+.studio-lum3x { border-left-color: var(--lum); } .studio-lum3x h2 { color: var(--lum); }
+.studio-ventures { border-left-color: var(--ven); }
+.studio-kpoplondonmin { border-left-color: var(--kmin); } .studio-kpoplondonmin h2 { color: var(--kmin); }
+.studio-haven { border-left-color: var(--haven); } .studio-haven h2 { color: var(--haven); }
+.mark { display: inline-block; min-width: 28px; text-align: center; border-radius: 999px; background: #eee; font-size: 12px; padding: 4px 6px; }
+.landing, .stale { font-size: 13px; color: #555; }

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klassified — London K-pop classes</title>
+<meta name="description" content="One searchable calendar for London K-pop dance classes.">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/">K</a>
+  <input id="q" name="query" type="search" placeholder="Search song, artist, teacher, studio" aria-label="Search classes" autocomplete="off">
+  <button id="filtersBtn" type="button">Filters <span id="fcount"></span></button>
+</header>
+<p class="landing">London K-pop classes, one calendar. Find a class by song or artist in seconds.</p>
+<p class="stale">Last updated 2h ago</p>
+<main id="results">{% include "partials/cards.html" %}</main>
+<script src="/static/app.js"></script>
+</body>
+</html>
