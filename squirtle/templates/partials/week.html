@@ -3,6 +3,23 @@
   <span>Week of {{ week_range[0].date }} to {{ week_range[6].date }}</span>
   <button type="button" data-day="{{ next_day }}" aria-label="Next week">Next</button>
 </div>
+{% if week_by_day is defined %}
+<div class="week-timegrid" role="grid" aria-label="Week calendar time grid">
+  <div class="week-hours" aria-hidden="true">
+    <div class="week-corner"></div>
+    {% for h in week_hours %}<div class="hour-row">{{ h.label }}</div>{% endfor %}
+  </div>
+  {% for d in week_range %}
+  <div class="wday-col" role="gridcell" aria-label="{{ d.date }}">
+    <button type="button" class="wday-head" data-day="{{ d.date }}"{% if d.selected %} aria-current="true"{% endif %}><span>{{ d.dow }}</span><span>{{ d.day }}</span></button>
+    <div class="day-column">
+      {% for h in week_hours %}<div class="hour-cell"></div>{% endfor %}
+      {% for c in week_by_day.get(d.date, []) %}<button type="button" class="chip event-block studio-{{ c.studio_slug }}" data-open="{{ c.id }}" data-start="{{ c.start_at }}" style="top:{{ c.top_px }}px;height:{{ c.height_px }}px;left:{{ c.left_pct }}%;width:{{ c.width_pct }}%;">{{ c.start_label }} {{ c.song or "Training" }}</button>{% else %}<span class="wempty">—</span>{% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
 <div class="weekgrid" role="grid" aria-label="Week view">
 {% for d in week_range %}
   <div class="wday" role="gridcell">
@@ -11,3 +28,4 @@
   </div>
 {% endfor %}
 </div>
+{% endif %}

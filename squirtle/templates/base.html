@@ -7,17 +7,17 @@
 <meta name="description" content="One searchable calendar for London K-pop dance classes.">
 <link rel="stylesheet" href="/static/style.css">
 </head>
-<body data-view="list">
+<body data-view="{{ view or 'list' }}">
 <header class="top">
-  <a class="logo" href="/" aria-label="Klassified home">K</a>
-  <input id="q" name="query" type="search" value="{{ query }}" placeholder="Search" aria-label="Search classes" autocomplete="off">
+  <a class="logo" href="/?view=list" aria-label="Klassified home">Klassified</a>
+  <input id="q" name="query" type="search" value="{{ query }}" placeholder="Search song, artist, teacher, studio" aria-label="Search classes" autocomplete="off">
 </header>
 <div class="subhead">
-  <form method="get" action="/"><input type="month" name="month" value="{{ active_month }}" aria-label="Pick month"></form>
-  <div id="viewToggle" role="group" aria-label="View"><button type="button" data-view="list" aria-pressed="true">List</button><button type="button" data-view="week" aria-pressed="false">Week</button><button type="button" data-view="month" aria-pressed="false">Month</button></div>
+  <form method="get" action="/"><input type="hidden" name="view" value="{{ view or 'list' }}"><input type="month" name="month" value="{{ active_month }}" aria-label="Pick month"></form>
+  <div id="viewToggle" role="group" aria-label="View"><a href="/?view=list{% if day %}&day={{ day }}{% endif %}&month={{ active_month }}" data-view="list" aria-pressed="{{ 'true' if (view or 'list') == 'list' else 'false' }}">Agenda</a><a href="/?view=week{% if day %}&day={{ day }}{% endif %}&month={{ active_month }}" data-view="week" aria-pressed="{{ 'true' if view == 'week' else 'false' }}">Week</a><a href="/?view=month&month={{ active_month }}{% if day %}&day={{ day }}{% endif %}" data-view="month" aria-pressed="{{ 'true' if view == 'month' else 'false' }}">Month</a></div>
   <button id="filtersBtn" type="button" aria-expanded="false" aria-controls="filtersSection">Filters{% if fcount %} ({{ fcount }}){% endif %}</button>
 </div>
-<p class="landing">London K-pop classes, one calendar. Find a class by song or artist in seconds.</p>
+<div class="landing"><h1>London K-pop classes, one calendar.</h1><p>Find a class by song or artist in seconds. Pick a day, scan the agenda, or browse week and month like Google Calendar.</p></div>
 <p class="stale">{{ stale_label }}</p>
 <nav class="week" aria-label="{{ week_label }}">{% for d in week %}<button type="button" data-day="{{ d.date }}"{% if d.selected %} aria-current="true"{% endif %}><span>{{ d.dow }}</span><span>{{ d.day }}</span></button>{% endfor %}</nav>
 <main id="results">{% include "partials/cards.html" %}</main>

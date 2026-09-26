@@ -117,16 +117,20 @@ document.getElementById("filtersBtn")?.addEventListener("click", (e) => {
   e.currentTarget.setAttribute("aria-expanded", String(!sec?.hasAttribute("hidden")));
 });
 document.getElementById("viewToggle")?.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-view]");
+  const btn = e.target.closest("[data-view]");
   if (!btn) return;
+  e.preventDefault();
   const view = btn.dataset.view;
   document.body.dataset.view = view;
-  document.querySelectorAll("#viewToggle button").forEach((b) => {
+  document.querySelectorAll("#viewToggle [data-view]").forEach((b) => {
     b.setAttribute("aria-pressed", String(b === btn));
   });
   document.getElementById("results")?.setAttribute("aria-hidden", String(view !== "list"));
   document.getElementById("weekWrap")?.setAttribute("aria-hidden", String(view !== "week"));
   document.querySelector(".month-wrap")?.setAttribute("aria-hidden", String(view !== "month"));
+  const url = new URL(location.href);
+  url.searchParams.set("view", view);
+  history.replaceState({}, "", url.toString());
 });
 
 if (location.hash.startsWith("#class=")) {

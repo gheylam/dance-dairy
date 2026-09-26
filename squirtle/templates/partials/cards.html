@@ -1,13 +1,16 @@
-{% if classes %}
+{% if day_groups %}
 <div class="tl">
-{% for c in classes %}
+{% for g in day_groups %}
+<section class="day-group" data-date="{{ g.date }}">
+  <h2 class="day-header"><time datetime="{{ g.date }}">{{ g.label }}</time><span class="day-count">{{ g.classes|length }} classes</span></h2>
+{% for c in g.classes %}
 <div class="trow">
   <div class="gutter"><time datetime="{{ c.start_at }}">{{ c.start_label }}</time></div>
   <article class="card studio-{{ c.studio_slug }} tint-{{ c.studio_slug }}" data-id="{{ c.id }}">
     <div class="card-main">
-      <h2>{{ c.song or "Training" }}</h2>
+      <h3>{{ c.song or "Training" }}</h3>
       <p class="sub">{{ c.artist or c.studio_raw }}</p>
-      <p class="meta">{{ c.teacher or "TBA" }}</p>
+      <p class="meta">{{ c.teacher or "TBA" }} · {{ c.studio_raw }}</p>
       <p class="meta"><span class="level">{{ c.difficulty }}</span>{% if c.song_section %}<span>{{ c.song_section }}</span>{% endif %}</p>
       <p class="meta"><time datetime="{{ c.start_at }}">{{ c.start_label }} - {{ c.end_label }}</time><span>{{ c.duration_label }}</span></p>
       <p class="meta">{{ c.venue }}, {{ c.area }}</p>
@@ -19,6 +22,8 @@
     </div>
   </article>
 </div>
+{% endfor %}
+</section>
 {% endfor %}
 </div>
 {% else %}

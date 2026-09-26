@@ -1,10 +1,11 @@
-<div class="month-nav"><span>{{ active_month }}</span><a href="/?month=2026-01">Today</a></div>
+<div class="month-nav"><a href="/?view=month&month={{ prev_month or '2025-12' }}" aria-label="Previous month">Prev</a><span>{{ active_month }}</span><a href="/?view=month&month={{ next_month or '2026-02' }}" aria-label="Next month">Next</a><a href="/?view=month&month=2026-01">Today</a></div>
 <table class="month" aria-label="{{ active_month }} calendar">
 {% for week in month %}
 <tr>{% for d in week %}
 <td class="{% if not d.in_month %}out{% endif %}" data-date="{{ d.date }}">
   <button type="button" data-day="{{ d.date }}">{{ d.day }}</button>
   <span class="dots">{% for s in d.dots[:3] %}<i class="dot studio-{{ s }}"></i>{% endfor %}{% if d.dots|length > 3 %}+{{ d.dots|length - 3 }}{% endif %}</span>
+  <span class="month-chips">{% for c in d.classes[:2] %}<button type="button" class="month-chip studio-{{ c.studio_slug }}" data-open="{{ c.id }}">{{ c.start_label }} {{ c.song or "Training" }}</button>{% endfor %}{% if d.total > 2 %}<a class="more-link" href="/?view=list&day={{ d.date }}&month={{ active_month }}">+{{ d.total - 2 }} more</a>{% endif %}</span>
 </td>
 {% endfor %}</tr>
 {% endfor %}
