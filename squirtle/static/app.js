@@ -6,8 +6,17 @@ let t;
 let lastOpener = null;
 
 async function loadCards(url) {
-  const r = await fetch(url);
-  results.innerHTML = await r.text();
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(String(r.status));
+    results.querySelector(".netfail")?.remove();
+    results.innerHTML = await r.text();
+  } catch {
+    if (!results.querySelector(".netfail")) {
+      results.insertAdjacentHTML("afterbegin",
+        "<p class=\"netfail\">Couldn't refresh — showing saved list.</p>");
+    }
+  }
 }
 
 async function openDetail(id, opener) {
@@ -31,6 +40,7 @@ q?.addEventListener("input", () => {
 results?.addEventListener("click", async (e) => {
   if (e.target.closest("#clearFilters")) {
     q.value = "";
+    document.querySelectorAll('#filters input[type="checkbox"]').forEach((c) => { c.checked = false; });
     document.querySelectorAll(".week button").forEach((b) => b.removeAttribute("aria-current"));
     await loadCards("/partials/cards");
     return;
@@ -57,3 +67,6 @@ async function dayClick(e) {
 
 document.querySelector(".week")?.addEventListener("click", dayClick);
 document.querySelector(".month")?.addEventListener("click", dayClick);
+document.getElementById("filtersBtn")?.addEventListener("click", () => {
+  document.getElementById("filtersSection")?.toggleAttribute("hidden");
+});

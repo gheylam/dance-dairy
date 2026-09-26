@@ -42,3 +42,13 @@ def test_filter_form_targets_ssr_and_count_renders():
     r = client.get("/", params={"studio": "lum3x"})
     assert 'action="/"' in r.text
     assert "(1)" in r.text
+
+
+def test_filter_section_toggle_target():
+    r = client.get("/")
+    assert 'id="filtersSection"' in r.text
+
+
+def test_refresh_failure_copy_pinned():
+    r = client.get("/static/app.js")
+    assert "Couldn't refresh" in r.text
