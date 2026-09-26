@@ -19,22 +19,49 @@ async function loadCards(url) {
   }
 }
 
+function currentFilterParams() {
+  const p = new URLSearchParams();
+  document.querySelectorAll('#filters input[type="checkbox"]:checked').forEach((c) => {
+    p.append(c.name, c.value);
+  });
+  document.querySelectorAll(".week button[aria-current]").forEach((b) => {
+    if (b.dataset.day) p.append("day", b.dataset.day);
+  });
+  return p;
+}
+
 async function openDetail(id, opener) {
   const r = await fetch("/partials/detail/" + id);
   if (!r.ok) return;
   lastOpener = opener || null;
   detailBody.innerHTML = await r.text();
   dialog.showModal();
+  history.pushState({ cid: id }, "", "#class=" + id);
+}
+
+function closeDetail() {
+  if (dialog.open) dialog.close();
+  if (location.hash.startsWith("#class=")) history.pushState({}, "", location.pathname + location.search);
 }
 
 dialog?.addEventListener("close", () => {
   if (lastOpener && document.contains(lastOpener)) lastOpener.focus();
   lastOpener = null;
+  if (location.hash.startsWith("#class=")) history.pushState({}, "", location.pathname + location.search);
+});
+
+window.addEventListener("popstate", () => {
+  if (dialog.open) dialog.close();
 });
 
 q?.addEventListener("input", () => {
   clearTimeout(t);
-  t = setTimeout(() => loadCards("/partials/cards?query=" + encodeURIComponent(q.value)), 300);
+  t = setTimeout(() => {
+    const p = currentFilterParams();
+    p.delete("query");
+    if (q.value) p.set("query", q.value);
+    loadCards("/partials/cards?" + p.toString());
+  }, 300);
 });
 
 results?.addEventListener("click", async (e) => {
@@ -70,3 +97,15 @@ document.querySelector(".month")?.addEventListener("click", dayClick);
 document.getElementById("filtersBtn")?.addEventListener("click", () => {
   document.getElementById("filtersSection")?.toggleAttribute("hidden");
 });
+document.getElementById("viewToggle")?.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-view]");
+  if (!btn) return;
+  document.body.dataset.view = btn.dataset.view;
+  document.querySelectorAll("#viewToggle button").forEach((b) => {
+    b.setAttribute("aria-pressed", String(b === btn));
+  });
+});
+
+if (location.hash.startsWith("#class=")) {
+  openDetail(location.hash.slice("#class=".length + 1), null);
+}
