@@ -14,3 +14,12 @@ body { margin: 0; color: var(--ink); font: 16px/1.45 system-ui, sans-serif; max-
 .studio-haven { border-left-color: var(--haven); } .studio-haven h2 { color: var(--haven); }
 .mark { display: inline-block; min-width: 28px; text-align: center; border-radius: 999px; background: #eee; font-size: 12px; padding: 4px 6px; }
 .landing, .stale { font-size: 13px; color: #555; }
+.month { border-collapse: collapse; width: 100%; font-size: 12px; }
+.month td { border: 1px solid #e3e3ea; padding: 4px; vertical-align: top; height: 44px; }
+.month td.out { color: #aaa; }
+.dots { display: flex; gap: 3px; }
+.dot { width: 8px; height: 8px; border-radius: 999px; background: #999; display: inline-block; }
+.dot.studio-dgcdance { background: var(--dgc); } .dot.studio-lum3x { background: var(--lum); }
+.dot.studio-ventures { background: var(--ven); } .dot.studio-kpoplondonmin { background: var(--kmin); }
+.dot.studio-haven { background: var(--haven); }
+dialog { border: 1px solid #ccc; border-radius: 12px; max-width: 480px; width: 90vw; }

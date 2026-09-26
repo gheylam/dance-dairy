@@ -16,6 +16,9 @@
 <p class="landing">London K-pop classes, one calendar. Find a class by song or artist in seconds.</p>
 <p class="stale">Last updated 2h ago</p>
 <main id="results">{% include "partials/cards.html" %}</main>
+<section aria-label="Month view">{% include "partials/month.html" %}</section>
+<section aria-label="Filters">{% include "partials/filters.html" %}</section>
+<dialog id="detail"><div id="detailBody"></div><form method="dialog"><button>Close</button></form></dialog>
 <script src="/static/app.js"></script>
 </body>
 </html>
