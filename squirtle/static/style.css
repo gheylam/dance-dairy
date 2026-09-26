@@ -64,21 +64,20 @@ body[data-view="month"] #weekWrap { display: none; }
 .week-hours { display: flex; flex-direction: column; position: sticky; left: 0; background: #fff; z-index: 2; }
 .week-corner { height: 44px; }
 .hour-row { height: 48px; font-size: 11px; color: #5C6672; border-top: 1px solid #eee; padding-top: 2px; }
-.wday-col { min-width: 88px; }
+.wday-col { min-width: 120px; }
 .wday-head { position: sticky; top: 0; z-index: 1; }
 .day-column { position: relative; height: 864px; border-left: 1px solid #eee; }
 .hour-cell { height: 48px; border-top: 1px solid #f0f0f3; }
 .event-block { position: absolute; overflow: hidden; min-height: 24px; }
+.overflow-badge { position: absolute; right: 2px; top: 2px; z-index: 5; background: #4a7fd4; color: #fff; font-size: 11px; padding: 4px 6px; border-radius: 999px; text-decoration: none; min-height: 24px; display: inline-flex; align-items: center; }
 .month-nav { display: flex; gap: 12px; align-items: center; margin: 8px 0; font-size: 14px; }
 .month-nav a { min-height: 44px; display: inline-flex; align-items: center; padding: 8px 12px; border: 1px solid #ccd; border-radius: 8px; text-decoration: none; color: var(--ink); background: #fff; }
 .month-chips { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
-.month-chip { font-size: 11px; border-radius: 6px; border: 1px solid #e3e3ea; border-left-width: 4px; background: #fff; padding: 4px 6px; text-align: left; min-height: 32px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.more-link { font-size: 11px; }
+.month-chip { font-size: 11px; border-radius: 6px; border: 1px solid #e3e3ea; border-left-width: 4px; background: #fff; padding: 4px 6px; text-align: left; min-height: 44px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.more-link { font-size: 12px; display: inline-flex; align-items: center; min-height: 44px; }
 .week-agenda { display: block; }
 @media (min-width: 720px) { .week-agenda { display: none; } }
 @media (max-width: 719px) { .week-timegrid, .weekgrid { display: none; } }
-.loading { font-size: 13px; color: #5C6672; }
-.skeleton { border-radius: 10px; background: linear-gradient(90deg,#eee,#f7f7f7,#eee); height: 64px; margin: 8px 0; }
 @media (min-width: 900px) { body { max-width: 1024px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none; } }
 :focus-visible { outline: 2px solid #2F7ED1; }

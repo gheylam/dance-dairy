@@ -131,6 +131,7 @@ document.getElementById("viewToggle")?.addEventListener("click", (e) => {
   const url = new URL(location.href);
   url.searchParams.set("view", view);
   history.replaceState({}, "", url.toString());
+  setTimeout(scrollWeekToEvents, 0);
 });
 
 if (location.hash.startsWith("#class=")) {
@@ -150,4 +151,3 @@ function scrollWeekToEvents() {
 }
 
 scrollWeekToEvents();
-document.getElementById("viewToggle")?.addEventListener("click", () => setTimeout(scrollWeekToEvents, 0));

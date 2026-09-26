@@ -1,4 +1,4 @@
-<div class="month-nav"><a href="/?view=month&month={{ prev_month or '2025-12' }}" aria-label="Previous month">Prev</a><span>{{ active_month }}</span><a href="/?view=month&month={{ next_month or '2026-02' }}" aria-label="Next month">Next</a><a href="/?view=month&month=2026-01">Today</a></div>
+<div class="month-nav"><a href="/?view=month&month={{ prev_month or '2025-12' }}{{ filter_qs }}" aria-label="Previous month">Prev</a><span>{{ active_month }}</span><a href="/?view=month&month={{ next_month or '2026-02' }}{{ filter_qs }}" aria-label="Next month">Next</a><a href="/?view=month&month=2026-01{{ filter_qs }}">Today</a></div>
 <table class="month" aria-label="{{ active_month }} calendar">
 {% for week in month %}
 <tr>{% for d in week %}

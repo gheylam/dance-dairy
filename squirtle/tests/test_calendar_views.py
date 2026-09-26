@@ -69,10 +69,46 @@ def test_layout_caps_overlap_columns_for_readability():
              "teacher": None, "venue": "V", "area": "A", "difficulty": "All Levels",
              "song_section": None, "price_pence": 1000, "booking_url": "u", "source_url": "u",
              "scraped_at": "2026-01-16T10:00:00+00:00", "studio_raw": "LUM3X"} for i in range(6)]
-    placed = layout_day_events(rows)
-    assert placed
-    assert max(p["cols"] for p in placed) <= 3
-    assert min(p["width_pct"] for p in placed) >= 50
+    laid = layout_day_events(rows)
+    shown = laid["events"]
+    assert shown
+    assert max(p["cols"] for p in shown) <= 3
+    assert min(p["width_pct"] for p in shown) >= 50
+    assert laid["overflow"] == 3
+
+
+def test_layout_identical_start_never_fully_occluded():
+    from app import layout_day_events
+
+    base = {"studio_slug": "lum3x", "start_at": "2026-01-16T19:00:00+00:00",
+            "end_at": "2026-01-16T21:00:00+00:00", "song": "S", "artist": None,
+            "teacher": None, "venue": "V", "area": "A", "difficulty": "All Levels",
+            "song_section": None, "price_pence": 1000, "booking_url": "u", "source_url": "u",
+            "scraped_at": "2026-01-16T10:00:00+00:00", "studio_raw": "LUM3X"}
+    rows = [dict(base, id=f"e{i}") for i in range(6)]
+    laid = layout_day_events(rows)
+    corners = [(p["top_px"], p["left_px"]) for p in laid["events"]]
+    assert len(corners) == len(set(corners))
+    assert laid["overflow"] == 3
+
+
+def test_real_stub_day_has_no_hidden_event():
+    from app import layout_day_events
+    from api.stubs import get_classes
+
+    rows = [r for r in get_classes() if r["start_at"][:10] == "2026-01-16"]
+    laid = layout_day_events(rows)
+    corners = [(p["top_px"], p["left_px"]) for p in laid["events"]]
+    assert len(corners) == len(set(corners))
+    assert laid["overflow"] == 3
+
+
+def test_week_grid_shows_overflow_badge_and_agenda_lists_all():
+    r = client.get("/partials/week", params={"day": "2026-01-16"})
+    assert "more" in r.text
+    # agenda below the grid must still list every class, including overflowed ones
+    assert "Lucifer" in r.text
+    assert "Boy With Luv" in r.text
 
 
 def test_week_partial_has_responsive_agenda_and_grid():
@@ -91,8 +127,7 @@ def test_layout_staggers_overlaps_without_full_occlusion():
              "teacher": None, "venue": "V", "area": "A", "difficulty": "All Levels",
              "song_section": None, "price_pence": 1000, "booking_url": "u", "source_url": "u",
              "scraped_at": "2026-01-16T10:00:00+00:00", "studio_raw": "LUM3X"} for i in range(6)]
-    placed = layout_day_events(rows)
-    corners = [(p["top_px"], p["left_px"]) for p in placed]
+    corners = [(p["top_px"], p["left_px"]) for p in layout_day_events(rows)["events"]]
     assert len(corners) == len(set(corners))
 
 
@@ -144,4 +179,51 @@ def test_level_and_song_section_not_run_together():
     assert "Last Chorus" in r.text
     # level span and song-section span must be separated in markup so text is not glued
     assert "</span><span>" not in r.text.split('class="level"')[1][:200]
+
+
+def test_view_links_preserve_active_filters():
+    r = client.get("/", params={"query": "BTS", "studio": "lum3x"})
+    toggle = r.text.split('id="viewToggle"')[1].split("</div>")[0]
+    assert "query=BTS" in toggle
+    assert "studio=lum3x" in toggle
+    assert toggle.count("query=BTS") >= 3
+
+
+def test_month_nav_preserves_active_filters():
+    r = client.get("/", params={"month": "2026-01", "query": "BTS"})
+    nav = r.text.split('class="month-nav"')[1].split("</div>")[0]
+    assert "query=BTS" in nav
+    assert "month=2025-12" in nav and "month=2026-02" in nav
+
+
+def test_min_touch_targets_for_month_controls():
+    css = open("static/style.css").read()
+    chip = css.split(".month-chip {")[1].split("}")[0]
+    assert "min-height: 44px" in chip
+    more = css.split(".more-link {")[1].split("}")[0]
+    assert "min-height: 44px" in more
+
+
+def test_no_grid_role_without_keyboard_model():
+    r = client.get("/partials/week", params={"day": "2026-01-16"})
+    assert 'role="grid"' not in r.text
+
+
+def test_build_hours_can_start_before_six():
+    from app import build_hours
+
+    hours = build_hours(5, 23)
+    assert hours[0] == {"hour": 5, "label": "5 AM"}
+
+
+def test_early_class_aligns_to_data_driven_start():
+    from app import layout_day_events
+
+    row = {"id": "early", "studio_slug": "lum3x", "start_at": "2026-01-16T05:00:00+00:00",
+           "end_at": "2026-01-16T06:00:00+00:00", "song": "S", "artist": None,
+           "teacher": None, "venue": "V", "area": "A", "difficulty": "All Levels",
+           "song_section": None, "price_pence": 1000, "booking_url": "u", "source_url": "u",
+           "scraped_at": "2026-01-16T10:00:00+00:00", "studio_raw": "LUM3X"}
+    laid = layout_day_events([row], week_hour_start=5)
+    assert laid["events"][0]["top_px"] == 0
 
