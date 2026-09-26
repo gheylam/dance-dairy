@@ -31,6 +31,9 @@ dialog { border: 1px solid #ccc; border-radius: 12px; max-width: 480px; width: 9
 .trow { display: grid; grid-template-columns: 44px 1fr; gap: 8px; }
 .gutter { font-size: 12px; color: #5C6672; padding-top: 10px; }
 .card.tint-dgcdance { background: #EDE9FF; } .card.tint-lum3x { background: #FFF4D6; }
+.card.tint-haven { background: #E8EFFD; } .card.tint-kpoplondonmin { background: #FDE6EF; }
+.card.tint-ventures { background: #E8E8EA; }
+.week button { min-height: 44px; }
 body[data-view="month"] #results { display: none; }
 body[data-view="list"] .month-wrap { display: none; }
 @media (prefers-reduced-motion: reduce) { * { transition: none; } }

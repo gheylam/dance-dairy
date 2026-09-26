@@ -1,5 +1,5 @@
 <div class="month-nav"><span>{{ active_month }}</span><a href="/?month=2026-01">Today</a></div>
-<table class="month" aria-label="January 2026 calendar">
+<table class="month" aria-label="{{ active_month }} calendar">
 {% for week in month %}
 <tr>{% for d in week %}
 <td class="{% if not d.in_month %}out{% endif %}" data-date="{{ d.date }}">

@@ -1,6 +1,7 @@
 import calendar as _cal
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -51,6 +52,15 @@ def valid_day(day: str) -> bool:
     return isinstance(day, str) and len(day) == 10 and day[4] == "-" and day[7] == "-"
 
 
+def stale_label(iso: str, now: Optional[str] = None) -> str:
+    start = datetime.fromisoformat(iso)
+    ref = datetime.fromisoformat(now) if now else datetime.now(start.tzinfo)
+    mins = max(0, int((ref - start).total_seconds() // 60))
+    if mins < 60:
+        return f"Last updated {mins}m ago"
+    return f"Last updated {mins // 60}h ago"
+
+
 def enrich(rows):
     out = []
     for r in rows:
@@ -93,7 +103,7 @@ def apply_filters(rows, query="", studio=None, difficulties=None, prices=None, a
 
 def filter_count(query="", studio=None, difficulties=None, prices=None, areas=None, day=""):
     studios = [studio] if isinstance(studio, str) else (studio or [])
-    n = (1 if query else 0) + len([s for s in studios if s]) + (1 if day else 0)
+    n = (1 if query else 0) + len([s for s in studios if s]) + (1 if valid_day(day) else 0)
     for v in (difficulties, prices, areas):
         vals = [v] if isinstance(v, str) else (v or [])
         n += len([x for x in vals if x])
@@ -164,9 +174,12 @@ def create_app():
         rows = enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, day))
         y, m = parse_month(month)
         display_day = day if valid_day(day) else "2026-01-16"
+        wk = build_week(display_day)
+        week_label = f"Week of {wk[0]['date']} to {wk[6]['date']}"
         return tpl.TemplateResponse(request, "agenda.html", {"request": request, "classes": rows,
                                                              "month": build_month(y, m),
-                                                             "week": build_week(display_day),
+                                                             "week": wk, "week_label": week_label,
+                                                             "stale_label": stale_label(get_classes()[0].get("scraped_at", "2026-01-16T10:00:00+00:00")),
                                                              "query": query, "studios": as_list(studio),
                                                              "difficulties": as_list(difficulty),
                                                              "prices": as_list(price), "areas": as_list(area),
@@ -180,14 +193,19 @@ def create_app():
         rows = enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, day))
         return tpl.TemplateResponse(request, "partials/cards.html", {"request": request, "classes": rows,
                                                                      "day": day, "query": query,
-                                                                     "studios": as_list(studio)})
+                                                                     "studios": as_list(studio),
+                                                                     "difficulties": as_list(difficulty),
+                                                                     "prices": as_list(price),
+                                                                     "areas": as_list(area)})
 
     @app.get("/partials/detail/{cid}", response_class=HTMLResponse)
     def detail(request: Request, cid: str):
         rows = [r for r in enrich(get_classes()) if r["id"] == cid]
         if not rows:
             return HTMLResponse("Not found", status_code=404)
-        return tpl.TemplateResponse(request, "partials/detail.html", {"request": request, "c": rows[0]})
+        c = rows[0]
+        return tpl.TemplateResponse(request, "partials/detail.html", {"request": request, "c": c,
+            "stale_label": stale_label(c.get("scraped_at", "2026-01-16T10:00:00+00:00"))})
 
     return app
 

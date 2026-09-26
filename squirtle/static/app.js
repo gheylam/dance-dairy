@@ -31,23 +31,18 @@ function currentFilterParams() {
 }
 
 async function openDetail(id, opener) {
-  const r = await fetch("/partials/detail/" + id);
+  const r = await fetch("/partials/detail/" + encodeURIComponent(id));
   if (!r.ok) return;
   lastOpener = opener || null;
   detailBody.innerHTML = await r.text();
   dialog.showModal();
-  history.pushState({ cid: id }, "", "#class=" + id);
-}
-
-function closeDetail() {
-  if (dialog.open) dialog.close();
-  if (location.hash.startsWith("#class=")) history.pushState({}, "", location.pathname + location.search);
+  history.pushState({ cid: id }, "", "#class=" + encodeURIComponent(id));
 }
 
 dialog?.addEventListener("close", () => {
   if (lastOpener && document.contains(lastOpener)) lastOpener.focus();
   lastOpener = null;
-  if (location.hash.startsWith("#class=")) history.pushState({}, "", location.pathname + location.search);
+  if (location.hash.startsWith("#class=")) history.replaceState({}, "", location.pathname + location.search);
 });
 
 window.addEventListener("popstate", () => {
@@ -88,14 +83,18 @@ async function dayClick(e) {
   document.querySelectorAll(".week button").forEach((b) => b.removeAttribute("aria-current"));
   const weekBtn = document.querySelector('.week button[data-day="' + btn.dataset.day + '"]');
   if (weekBtn) weekBtn.setAttribute("aria-current", "true");
-  const url = btn.dataset.day ? "/partials/cards?day=" + btn.dataset.day : "/partials/cards";
-  await loadCards(url);
+  const p = currentFilterParams();
+  p.delete("day");
+  if (btn.dataset.day) p.set("day", btn.dataset.day);
+  await loadCards("/partials/cards?" + p.toString());
 }
 
 document.querySelector(".week")?.addEventListener("click", dayClick);
 document.querySelector(".month")?.addEventListener("click", dayClick);
-document.getElementById("filtersBtn")?.addEventListener("click", () => {
-  document.getElementById("filtersSection")?.toggleAttribute("hidden");
+document.getElementById("filtersBtn")?.addEventListener("click", (e) => {
+  const sec = document.getElementById("filtersSection");
+  sec?.toggleAttribute("hidden");
+  e.currentTarget.setAttribute("aria-expanded", String(!sec?.hasAttribute("hidden")));
 });
 document.getElementById("viewToggle")?.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-view]");
@@ -107,5 +106,6 @@ document.getElementById("viewToggle")?.addEventListener("click", (e) => {
 });
 
 if (location.hash.startsWith("#class=")) {
-  openDetail(location.hash.slice("#class=".length + 1), null);
+  const deepId = location.hash.slice("#class=".length + 1);
+  if (/^[A-Za-z0-9-]+$/.test(deepId)) openDetail(deepId, null);
 }

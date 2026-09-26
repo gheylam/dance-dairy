@@ -11,16 +11,15 @@
 <header class="top">
   <a class="logo" href="/" aria-label="Klassified home">K</a>
   <input id="q" name="query" type="search" value="{{ query }}" placeholder="Search" aria-label="Search classes" autocomplete="off">
-  <button type="button" aria-label="Menu">☰</button>
 </header>
 <div class="subhead">
   <form method="get" action="/"><input type="month" name="month" value="{{ active_month }}" aria-label="Pick month"></form>
   <div id="viewToggle" role="group" aria-label="View"><button type="button" data-view="list" aria-pressed="true">List</button><button type="button" data-view="month" aria-pressed="false">Month</button></div>
-  <button id="filtersBtn" type="button">Filters{% if fcount %} ({{ fcount }}){% endif %}</button>
+  <button id="filtersBtn" type="button" aria-expanded="false" aria-controls="filtersSection">Filters{% if fcount %} ({{ fcount }}){% endif %}</button>
 </div>
 <p class="landing">London K-pop classes, one calendar. Find a class by song or artist in seconds.</p>
-<p class="stale">Last updated 2h ago</p>
-<nav class="week" aria-label="Week">{% for d in week %}<button type="button" data-day="{{ d.date }}"{% if d.selected %} aria-current="true"{% endif %}><span>{{ d.dow }}</span><span>{{ d.day }}</span></button>{% endfor %}</nav>
+<p class="stale">{{ stale_label }}</p>
+<nav class="week" aria-label="{{ week_label }}">{% for d in week %}<button type="button" data-day="{{ d.date }}"{% if d.selected %} aria-current="true"{% endif %}><span>{{ d.dow }}</span><span>{{ d.day }}</span></button>{% endfor %}</nav>
 <main id="results">{% include "partials/cards.html" %}</main>
 <div class="month-wrap"><section aria-label="Month view">{% include "partials/month.html" %}</section></div>
 <section aria-label="Filters" id="filtersSection">{% include "partials/filters.html" %}</section>
