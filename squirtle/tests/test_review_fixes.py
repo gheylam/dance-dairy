@@ -38,3 +38,12 @@ def test_js_history_and_a11y():
     assert "encodeURIComponent" in js
     assert "aria-pressed" in js and "aria-expanded" in js
     assert 'p.set("day"' in js or "p.set('day'" in js
+
+
+def test_home_empty_stubs_no_500(monkeypatch):
+    import app as appmod
+    monkeypatch.setattr(appmod, "get_classes", lambda: [])
+    c = TestClient(appmod.create_app())
+    r = c.get("/")
+    assert r.status_code == 200
+    assert "No classes found" in r.text

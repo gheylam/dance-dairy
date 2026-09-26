@@ -171,15 +171,17 @@ def create_app():
     def home(request: Request, query: str = "", studio: list = Query([]),
              difficulty: list = Query([]), price: list = Query([]),
              area: list = Query([]), day: str = "", month: str = "2026-01"):
-        rows = enrich(apply_filters(get_classes(), query, studio, difficulty, price, area, day))
+        all_rows = get_classes()
+        rows = enrich(apply_filters(all_rows, query, studio, difficulty, price, area, day))
         y, m = parse_month(month)
         display_day = day if valid_day(day) else "2026-01-16"
         wk = build_week(display_day)
         week_label = f"Week of {wk[0]['date']} to {wk[6]['date']}"
+        first = all_rows[0] if all_rows else {}
         return tpl.TemplateResponse(request, "agenda.html", {"request": request, "classes": rows,
                                                              "month": build_month(y, m),
                                                              "week": wk, "week_label": week_label,
-                                                             "stale_label": stale_label(get_classes()[0].get("scraped_at", "2026-01-16T10:00:00+00:00")),
+                                                             "stale_label": stale_label(first.get("scraped_at", "2026-01-16T10:00:00+00:00")),
                                                              "query": query, "studios": as_list(studio),
                                                              "difficulties": as_list(difficulty),
                                                              "prices": as_list(price), "areas": as_list(area),

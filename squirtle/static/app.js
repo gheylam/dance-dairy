@@ -103,6 +103,9 @@ document.getElementById("viewToggle")?.addEventListener("click", (e) => {
   document.querySelectorAll("#viewToggle button").forEach((b) => {
     b.setAttribute("aria-pressed", String(b === btn));
   });
+  const showingMonth = btn.dataset.view === "month";
+  document.getElementById("results")?.setAttribute("aria-hidden", String(showingMonth));
+  document.querySelector(".month-wrap")?.setAttribute("aria-hidden", String(!showingMonth));
 });
 
 if (location.hash.startsWith("#class=")) {
