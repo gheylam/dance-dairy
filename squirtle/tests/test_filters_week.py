@@ -70,3 +70,10 @@ def test_home_renders_new_filter_groups():
     assert "Song" in r.text
     assert "Artist" in r.text
     assert "Teacher" in r.text
+
+
+def test_js_refreshes_week_grid_on_filter():
+    from pathlib import Path
+
+    js = (Path(__file__).parent.parent / "static" / "app.js").read_text()
+    assert "/partials/week" in js

@@ -6,6 +6,8 @@ let t;
 let lastOpener = null;
 
 async function loadCards(url) {
+  const weekUrl = url.replace("/partials/cards", "/partials/week");
+  const weekWrap = document.getElementById("weekWrap");
   try {
     const r = await fetch(url);
     if (!r.ok) throw new Error(String(r.status));
@@ -15,6 +17,18 @@ async function loadCards(url) {
     if (!results.querySelector(".netfail")) {
       results.insertAdjacentHTML("afterbegin",
         "<p class=\"netfail\">Couldn't refresh — showing saved list.</p>");
+    }
+  }
+  if (!weekWrap) return;
+  try {
+    const r = await fetch(weekUrl);
+    if (!r.ok) throw new Error(String(r.status));
+    weekWrap.querySelector(".netfail")?.remove();
+    weekWrap.innerHTML = await r.text();
+  } catch {
+    if (!weekWrap.querySelector(".netfail")) {
+      weekWrap.insertAdjacentHTML("afterbegin",
+        "<p class=\"netfail\">Couldn't refresh — showing saved week.</p>");
     }
   }
 }
