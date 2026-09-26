@@ -4,3 +4,6 @@
 
 # superpower working docs never committed
 docs/superpowers/
+
+# local browser screenshots from agent tooling
+.openchamber/

@@ -171,11 +171,8 @@ def build_month(year, month):
     enriched = {r["id"]: r for r in enrich(get_classes())}
     by_date = {}
     for r in get_classes():
-        d = r["start_at"][:10]
-        by_date.setdefault(d, [])
-        if r["studio_slug"] not in [x["studio_slug"] for x in by_date[d]]:
-            by_date[d].append(r)
-    for d, lst in by_date.items():
+        by_date.setdefault(r["start_at"][:10], []).append(r)
+    for lst in by_date.values():
         lst.sort(key=lambda r: r["start_at"])
     weeks = []
     for week in cal.monthdatescalendar(year, month):
@@ -183,8 +180,12 @@ def build_month(year, month):
         for d in week:
             iso = d.isoformat()
             items = by_date.get(iso, [])
+            studios = []
+            for x in items:
+                if x["studio_slug"] not in studios:
+                    studios.append(x["studio_slug"])
             row.append({"day": d.day, "in_month": d.month == month,
-                        "date": iso, "dots": [x["studio_slug"] for x in items],
+                        "date": iso, "dots": studios,
                         "classes": [{"id": x["id"], "song": x.get("song"),
                                      "start_label": enriched[x["id"]]["start_label"],
                                      "studio_slug": x["studio_slug"]} for x in items],
@@ -246,6 +247,10 @@ def _minutes(iso: str) -> int:
     return dt.hour * 60 + dt.minute
 
 
+MAX_EVENT_COLS = 3
+STAGGER_PCT = 18
+
+
 def layout_day_events(rows):
     items = sorted(enrich(rows), key=lambda r: r["start_at"])
     placed = []
@@ -259,7 +264,7 @@ def layout_day_events(rows):
         while col in used:
             col += 1
         entry = dict(r)
-        entry["col"] = col
+        entry["col"] = min(col, MAX_EVENT_COLS - 1)
         entry["_end"] = e
         active.append(entry)
         placed.append(entry)
@@ -268,14 +273,14 @@ def layout_day_events(rows):
         e = _minutes(entry["end_at"])
         overlap = [o for o in placed
                    if _minutes(o["start_at"]) < e and s < _minutes(o["end_at"])]
-        ncols = max(1, max(o["col"] for o in overlap) + 1)
-        entry["cols"] = ncols
+        entry["cols"] = min(MAX_EVENT_COLS, max(1, max(o["col"] for o in overlap) + 1))
         top = max(0, (s - WEEK_HOUR_START * 60) * PX_PER_HOUR / 60)
         h = max(24, (e - s) * PX_PER_HOUR / 60)
         entry["top_px"] = int(top)
         entry["height_px"] = int(h)
-        entry["left_pct"] = round(entry["col"] / ncols * 100, 1)
-        entry["width_pct"] = round(100 / ncols, 1)
+        entry["left_px"] = entry["col"] * 14
+        entry["left_pct"] = entry["col"] * STAGGER_PCT
+        entry["width_pct"] = 100 - entry["left_pct"]
     return placed
 
 
@@ -296,6 +301,16 @@ def create_app():
     app = FastAPI(title="Klassified")
     app.mount("/static", StaticFiles(directory=str(BASE / "static")), name="static")
     tpl = Jinja2Templates(directory=str(BASE / "templates"))
+
+    def asset_v() -> str:
+        try:
+            files = [(BASE / "static" / n).stat().st_mtime
+                     for n in ("style.css", "app.js")]
+            return str(int(max(files)))
+        except Exception:
+            return "1"
+
+    tpl.env.globals["asset_v"] = asset_v
 
     @app.get("/api/classes")
     def list_classes(query: str = "", studio: list = Query([]), difficulty: list = Query([]),

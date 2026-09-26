@@ -137,3 +137,17 @@ if (location.hash.startsWith("#class=")) {
   const deepId = location.hash.slice("#class=".length + 1);
   if (/^[A-Za-z0-9-]+$/.test(deepId)) openDetail(deepId, null);
 }
+
+function scrollWeekToEvents() {
+  const grid = document.querySelector(".week-timegrid");
+  if (!grid) return;
+  const first = grid.querySelector(".event-block");
+  const dayCol = first ? first.closest(".wday-col") : grid.querySelector(".wday-col");
+  if (first) grid.scrollTop = Math.max(0, first.offsetTop - 48);
+  if (dayCol && grid.scrollWidth > grid.clientWidth) {
+    dayCol.scrollIntoView({ block: "nearest", inline: "center" });
+  }
+}
+
+scrollWeekToEvents();
+document.getElementById("viewToggle")?.addEventListener("click", () => setTimeout(scrollWeekToEvents, 0));

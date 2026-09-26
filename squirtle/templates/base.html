@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Klassified — London K-pop classes</title>
 <meta name="description" content="One searchable calendar for London K-pop dance classes.">
-<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/style.css?v={{ asset_v() }}">
 </head>
 <body data-view="{{ view or 'list' }}">
 <header class="top">
@@ -23,8 +23,8 @@
 <main id="results">{% include "partials/cards.html" %}</main>
 <div id="weekWrap" aria-hidden="true"><section aria-label="Week view">{% include "partials/week.html" %}</section></div>
 <div class="month-wrap" aria-hidden="true"><section aria-label="Month view">{% include "partials/month.html" %}</section></div>
-<section aria-label="Filters" id="filtersSection">{% include "partials/filters.html" %}</section>
+<section aria-label="Filters" id="filtersSection" hidden>{% include "partials/filters.html" %}</section>
 <dialog id="detail"><div id="detailBody"></div><form method="dialog"><button>Close</button></form></dialog>
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v={{ asset_v() }}"></script>
 </body>
 </html>

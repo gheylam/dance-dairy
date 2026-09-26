@@ -1,6 +1,6 @@
-:root { --dgc: #6d5bd0; --lum: #b98a00; --ven: #111; --kmin: #c2437e; --haven: #4a7fd4; --ink: #1a1a1a; }
+:root { --dgc: #6d5bd0; --lum: #b98a00; --ven: #111; --kmin: #c2437e; --haven: #4a7fd4; --ink: #1a1a1a; color-scheme: light; }
 * { box-sizing: border-box; }
-body { margin: 0; color: var(--ink); font: 16px/1.45 system-ui, sans-serif; max-width: 640px; margin-inline: auto; padding: 12px; }
+body { margin: 0; color: var(--ink); background: #fff; font: 16px/1.45 system-ui, sans-serif; max-width: 640px; margin-inline: auto; padding: 12px; }
 .top { display: flex; gap: 8px; align-items: center; }
 .logo { font-weight: 800; font-size: 28px; color: #4a7fd4; text-decoration: none; }
 #q { flex: 1; padding: 10px 12px; border-radius: 999px; border: 1px solid #ccd; }
@@ -36,6 +36,8 @@ dialog { border: 1px solid #ccc; border-radius: 12px; max-width: 480px; width: 9
 .week button { min-height: 44px; }
 body[data-view="list"] #weekWrap { display: none; }
 body[data-view="list"] .month-wrap { display: none; }
+body[data-view="week"] .week { display: none; }
+body[data-view="month"] .week { display: none; }
 body[data-view="week"] #results { display: none; }
 body[data-view="week"] .month-wrap { display: none; }
 body[data-view="month"] #results { display: none; }
@@ -58,11 +60,12 @@ body[data-view="month"] #weekWrap { display: none; }
 .day-group { margin: 12px 0; }
 .day-header { position: sticky; top: 0; background: #f6f7f9; padding: 8px 10px; border-radius: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; margin: 0 0 4px; z-index: 1; }
 .day-count { font-size: 12px; color: #5C6672; font-weight: 400; }
-.week-timegrid { display: grid; grid-template-columns: 52px repeat(7, minmax(88px, 1fr)); gap: 4px; overflow-x: auto; align-items: start; }
-.week-hours { display: flex; flex-direction: column; }
+.week-timegrid { display: grid; grid-template-columns: 52px repeat(7, minmax(120px, 1fr)); gap: 4px; overflow: auto; max-height: 70vh; align-items: start; }
+.week-hours { display: flex; flex-direction: column; position: sticky; left: 0; background: #fff; z-index: 2; }
 .week-corner { height: 44px; }
 .hour-row { height: 48px; font-size: 11px; color: #5C6672; border-top: 1px solid #eee; padding-top: 2px; }
 .wday-col { min-width: 88px; }
+.wday-head { position: sticky; top: 0; z-index: 1; }
 .day-column { position: relative; height: 864px; border-left: 1px solid #eee; }
 .hour-cell { height: 48px; border-top: 1px solid #f0f0f3; }
 .event-block { position: absolute; overflow: hidden; min-height: 24px; }
@@ -71,6 +74,9 @@ body[data-view="month"] #weekWrap { display: none; }
 .month-chips { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
 .month-chip { font-size: 11px; border-radius: 6px; border: 1px solid #e3e3ea; border-left-width: 4px; background: #fff; padding: 4px 6px; text-align: left; min-height: 32px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .more-link { font-size: 11px; }
+.week-agenda { display: block; }
+@media (min-width: 720px) { .week-agenda { display: none; } }
+@media (max-width: 719px) { .week-timegrid, .weekgrid { display: none; } }
 .loading { font-size: 13px; color: #5C6672; }
 .skeleton { border-radius: 10px; background: linear-gradient(90deg,#eee,#f7f7f7,#eee); height: 64px; margin: 8px 0; }
 @media (min-width: 900px) { body { max-width: 1024px; } }
